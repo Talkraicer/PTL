@@ -117,6 +117,8 @@ class SUMOAdapter:
         in_probs = np.random.uniform(0, 0.2, self.ramps_num)
         out_probs = np.random.uniform(0, 0.2, self.ramps_num)
         for hour, hour_demand in self.demand_profile.veh_amount.items():
+            if hour_demand == 0:
+                continue
             total_arrival_prob = hour_demand / 3600
             bus_veh_prop = self.demand_profile.bus_amount[hour] / hour_demand
             taken = 0

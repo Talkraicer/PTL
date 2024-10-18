@@ -17,6 +17,7 @@ def get_all_subclasses(cls):
 
 def simulate(args):
     demand, seed, av_rate, min_num_pass, policy = args
+    print(demand.__name__, policy.__name__)
     demand = demand()
     sumo = SUMOAdapter(demand, seed, av_rate)
     sumo.init_simulation(output_file=f"{demand.__str__()}_{policy.__name__}_{min_num_pass}.xml")
