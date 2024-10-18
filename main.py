@@ -18,7 +18,7 @@ def get_all_subclasses(cls):
 def simulate(args):
     demand, seed, av_rate, min_num_pass, policy = args
     sumo = SUMOAdapter(demand(), seed, av_rate)
-    policy = policy(sumo, min_num_pass) if policy.__str__() != "Nothing" else policy(sumo)
+    policy = policy(sumo, min_num_pass) if policy.__name__ != "Nothing" else policy(sumo)
     t = 0
     while not sumo.isFinish():
         policy.handle_step(sumo.get_state(t))
