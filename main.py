@@ -24,7 +24,7 @@ def simulate(args):
     policy = policy(sumo, min_num_pass) if policy.__name__ != "Nothing" else policy(sumo)
     t = 0
     while not sumo.isFinish():
-        policy.handle_step(sumo.get_state(t))
+        policy.handle_step(sumo.get_state_dict(t))
         sumo.step(t)
         t += 1
     sumo.close()
