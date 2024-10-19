@@ -3,9 +3,12 @@ from SUMO.SUMOAdpater import SUMOAdapter
 
 
 class StepHandleFunction:
+    is_num_pass_dependent = False
+    is_av_rate_dependent = False
+
     def __init__(self, env: SUMOAdapter):
-        if env.isFinish():
-            raise Exception("Simulation is not running")
+        # if env.isFinish():
+        #     raise Exception("Simulation is not running")
         self.env = env
 
     def handle_step(self, state_dict):
@@ -15,16 +18,12 @@ class StepHandleFunction:
         pass
 
 
-
 class Nothing(StepHandleFunction):
     def __init__(self, env: SUMOAdapter):
         super().__init__(env)
-        for lane in traci.lane.getIDList():
-            if "bus" in traci.lane.getAllowed(lane):
-                traci.lane.setAllowed(lane, "bus")
-
-    def handle_step(self, state_dict):
-        pass
+        PTL_lane_ids = env.get_PTL_lane_ids()
+        for lane in PTL_lane_ids:
+            traci.lane.setAllowed(lane, "bus")
 
     def __str__(self):
         return "Nothing"
@@ -32,12 +31,18 @@ class Nothing(StepHandleFunction):
 
 class Plus(StepHandleFunction):
     pass_range = range(1, 6)
-    def __init__(self, env: SUMOAdapter, min_num_pass):
+    is_num_pass_dependent = True
+
+    def __init__(self, env: SUMOAdapter):
         super().__init__(env)
+        self.min_num_pass = None
+
+    def set_num_pass(self, min_num_pass):
         assert min_num_pass in self.pass_range, "min_num_pass should be between 1 and 5"
         self.min_num_pass = min_num_pass
 
     def handle_step(self, state_dict):
+        assert self.min_num_pass is not None, "min_num_pass is not set"
         self.env.allow_vehicles(min_num_pass=self.min_num_pass)
 
     def __str__(self):
@@ -45,22 +50,26 @@ class Plus(StepHandleFunction):
 
 
 class StaticNumPass(Plus):
-    def __init__(self, env: SUMOAdapter, min_num_pass):
-        super().__init__(env, min_num_pass)
+    is_av_rate_dependent = True
+    def __init__(self, env: SUMOAdapter):
+        super().__init__(env)
+        assert env.av_rate != 0, "av_rate is not set"
 
     def handle_step(self, state_dict):
-        self.env.allow_vehicles(min_num_pass=self.min_num_pass, veh_type="AV")
+        assert self.min_num_pass is not None, "min_num_pass is not set"
+        self.env.allow_vehicles(min_num_pass=self.min_num_pass, veh_types=["AV"])
 
     def __str__(self):
         return f"StaticNumPass_{self.min_num_pass}"
 
 
-class StaticNumPassFL(Plus):
-    def __init__(self, env: SUMOAdapter, min_num_pass):
-        super().__init__(env, min_num_pass)
+class StaticNumPassFL(StaticNumPass):
+    def __init__(self, env: SUMOAdapter):
+        super().__init__(env)
 
     def handle_step(self, state_dict):
-        self.env.allow_vehicles(min_num_pass=self.min_num_pass, veh_type="AV", edge="E0")
+        assert self.min_num_pass is not None, "min_num_pass is not set"
+        self.env.allow_vehicles(min_num_pass=self.min_num_pass, veh_types=["AV"], edge="E0")
 
     def __str__(self):
         return f"StaticNumPassFL_{self.min_num_pass}"

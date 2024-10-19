@@ -28,21 +28,39 @@ class SUMOAdapter:
         self.route_file = os.path.join(self.config_folder, f"av_{av_rate}.rou.xml")
         self.config_file = os.path.join(self.config_folder, f"av_{av_rate}.sumocfg")
 
-    def allow_vehicles(self, edge="all", veh_type="all", min_num_pass=0):
+    def allow_vehicles(self, edge: str = "all", veh_types=None, min_num_pass=0):
+        if veh_types is None:
+            veh_types = ["AV", "HD"]
+
         veh_ids = traci.vehicle.getIDList() if edge == "all" else traci.edge.getLastStepVehicleIDs(edge)
-        if veh_type != "all":
-            veh_ids = [veh for veh in veh_ids if traci.vehicle.getTypeID(veh).startswith(veh_type)]
-        else:
-            veh_ids = [veh for veh in veh_ids if not traci.vehicle.getTypeID(veh).startswith("Bus")]
-        if min_num_pass > 0:
-            veh_ids = [veh for veh in veh_ids if int(traci.vehicle.getTypeID(veh).split("_")[1][0]) >= min_num_pass]
 
         for veh_id in veh_ids:
-            traci.vehicle.setVehicleClass(veh_id, "private")
+            veh_type = traci.vehicle.getTypeID(veh_id)
+            num_pass = int(veh_type.split("_")[1][0])
+            if veh_type.startswith("Bus"):
+                continue
+            if veh_type not in veh_types:
+                continue
+            if num_pass >= min_num_pass:
+                traci.vehicle.setVehicleClass(veh_id, "private")
+
+    def get_PTL_lane_ids(self):
+        return [lane for lane in traci.lane.getIDList() if "bus" in traci.lane.getAllowed(lane)]
 
     def get_state_dict(self, t):
         state_dict = {}
         state_dict["t"] = t
+        PTL_lane_ids = self.get_PTL_lane_ids()
+        state_dict["veh_ids_in_PTL"] = [veh_id for lane in PTL_lane_ids for veh_id in
+                                        traci.lane.getLastStepVehicleIDs(lane)]
+        state_dict["num_vehs_in_PTL"] = len(state_dict["veh_ids_in_PTL"])
+        state_dict["num_total_vehs"] = len(traci.vehicle.getIDList())
+
+        state_dict["mean_speed"] = np.mean([traci.vehicle.getSpeed(vehID) for vehID in traci.vehicle.getIDList()]) \
+            if state_dict["num_total_vehs"] > 0 else 0
+        state_dict["mean_speed_in_PTL"] = np.mean(
+            [traci.vehicle.getSpeed(vehID) for vehID in state_dict["veh_ids_in_PTL"]]) \
+            if state_dict["num_vehs_in_PTL"] > 0 else 0
 
         return state_dict
 
@@ -65,7 +83,7 @@ class SUMOAdapter:
             self._create_config_file()
         else:
             print(f"Config file {self.config_file} already exists")
-        self._init_sumo(self.config_file, self.output_file)
+        self._init_sumo()
 
     def _create_vType_dist(self, root):
         # Set vTypeDistribution to contain the probabilities of each vehicle type and the number of passengers
@@ -75,17 +93,23 @@ class SUMOAdapter:
             vTypeDist.text += '\t'
             if vTypeDist.attrib['id'] == 'vehicleDist':
                 for k, v in self.demand_profile.prob_pass_av.items():
+                    if av_prob == 0 or v == 0:
+                        continue
                     prob = round(av_prob * v, 5)
                     elem = ET.Element('vType', id=f'AV_{k}', color='blue', probability=str(prob), vClass='evehicle')
                     elem.tail = '\n\t\t'
                     vTypeDist.append(elem)
                 for k, v in self.demand_profile.prob_pass_hd.items():
+                    if hdv_prob == 0 or v == 0:
+                        continue
                     prob = round(hdv_prob * v, 5)
                     elem = ET.Element('vType', id=f'HD_{k}', color='red', probability=str(prob), vClass='passenger')
                     elem.tail = '\n\t\t'
                     vTypeDist.append(elem)
             elif vTypeDist.attrib['id'] == 'busDist':
                 for k, v in self.demand_profile.prob_pass_bus.items():
+                    if v == 0:
+                        continue
                     elem = ET.Element('vType', id=f'Bus_{k}', probability=str(v), vClass='bus')
                     elem.tail = '\n\t\t'
                     vTypeDist.append(elem)
@@ -188,7 +212,7 @@ class SUMOAdapter:
 
         tree.write(self.config_file)
 
-    def _init_sumo(self, config_file, results_folder=None):
+    def _init_sumo(self):
         sumo_binary = self._get_sumo_entrypoint()
         sumo_cmd = [sumo_binary, "-c", self.config_file]
         sumo_cmd += ["--tripinfo-output", self.output_file]
