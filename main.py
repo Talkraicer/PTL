@@ -5,6 +5,8 @@ from multiprocessing.pool import Pool
 import numpy as np
 from tqdm import tqdm
 from Loggers.CSVLogger import CSVLogger
+import os
+
 np.random.seed(42)
 MAX_NUM_PROCESS = None  # set to None to use all available cores
 
@@ -17,17 +19,24 @@ def get_all_subclasses(cls):
     return subclasses
 
 
-def simulate(args, logger = CSVLogger):
+def clear_older_configs():
+    for file in os.listdir("SUMO/SUMOconfig"):
+        # check if file is a directory
+        if os.path.isdir(file):
+            # remove the directory
+            os.rmdir(file)
+
+
+def simulate(args, logger=CSVLogger):
     demand, seed, av_rate, min_num_pass, policy = args
 
-    demand = demand()   # initialize demand
-    sumo = SUMOAdapter(demand, seed, av_rate)   # initialize SUMOAdapter
-
+    demand = demand()  # initialize demand
+    sumo = SUMOAdapter(demand, seed, av_rate)  # initialize SUMOAdapter
 
     # initialize simulation
     output_filename = f"{demand.__str__()}_{policy.__name__}"
     output_filename += f"_{min_num_pass}" if policy.is_num_pass_dependent else ""
-    sumo.init_simulation(output_file=f"{output_filename}.xml") # initialize simulation
+    sumo.init_simulation(output_file=f"{output_filename}.xml")  # initialize simulation
 
     # initialize logger:
     if logger:
@@ -52,6 +61,7 @@ def simulate(args, logger = CSVLogger):
 
 
 def main():
+    clear_older_configs()
     demands = get_all_subclasses(Demand)
     seeds = [np.random.randint(0, 10000) for _ in range(10)]
     av_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
