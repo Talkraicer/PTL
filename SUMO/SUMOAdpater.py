@@ -28,6 +28,8 @@ class SUMOAdapter:
         self.route_file = os.path.join(self.config_folder, f"av_{av_rate}.rou.xml")
         self.config_file = os.path.join(self.config_folder, f"av_{av_rate}.sumocfg")
 
+        self.create_rou_cfg_files()
+
     def allow_vehicles(self, edge: str = "all", veh_types=None, min_num_pass=0):
         if veh_types is None:
             veh_types = ["AV", "HD"]
@@ -78,14 +80,6 @@ class SUMOAdapter:
         self._create_config_file()
     def init_simulation(self, output_file="output.xml"):
         self.output_file = os.path.join(self.output_folder, output_file)
-        if not os.path.exists(self.route_file):
-            self._create_route_file()
-        else:
-            print(f"Route file {self.route_file} already exists")
-        if not os.path.exists(self.config_file):
-            self._create_config_file()
-        else:
-            print(f"Config file {self.config_file} already exists")
         self._init_sumo()
 
     def _create_vType_dist(self, root):
