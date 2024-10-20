@@ -28,13 +28,11 @@ def clear_older_configs():
 
 
 def simulate(args, logger=CSVLogger):
-    demand, seed, av_rate, min_num_pass, policy = args
+    sumo, min_num_pass, policy = args
 
-    demand = demand()  # initialize demand
-    sumo = SUMOAdapter(demand, seed, av_rate)  # initialize SUMOAdapter
 
     # initialize simulation
-    output_filename = f"{demand.__str__()}_{policy.__name__}"
+    output_filename = f"{sumo.demand_profile.__str__()}_{policy.__name__}"
     output_filename += f"_{min_num_pass}" if policy.is_num_pass_dependent else ""
     sumo.init_simulation(output_file=f"{output_filename}.xml")  # initialize simulation
 
@@ -69,18 +67,22 @@ def main():
     policies = get_all_subclasses(StepHandleFunction)
     args = []
     for demand in demands:
+        demand_inst = demand()
         for seed in seeds:
             for policy in policies:
                 if policy.is_num_pass_dependent:
                     if policy.is_av_rate_dependent:
                         for av_rate in av_rates:
+                            sumo = SUMOAdapter(demand_inst, seed, av_rate)
                             for min_num_pass in pass_range:
-                                args.append((demand, seed, av_rate, min_num_pass, policy))
+                                args.append((sumo, min_num_pass, policy))
                     else:
+                        sumo = SUMOAdapter(demand_inst, seed, 0)
                         for min_num_pass in pass_range:
-                            args.append((demand, seed, 0, min_num_pass, policy))
+                            args.append((sumo, min_num_pass, policy))
                 else:
-                    args.append((demand, seed, 0, 0, policy))
+                    sumo = SUMOAdapter(demand_inst, seed, 0)
+                    args.append((sumo, 0, policy))
     with Pool(MAX_NUM_PROCESS) as pool:
         list(tqdm(pool.imap(simulate, args), total=len(args)))
 
