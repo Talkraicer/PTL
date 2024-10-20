@@ -4,7 +4,6 @@ import os
 from xml.etree import ElementTree as ET
 from SUMO.demand_profiles import *
 
-
 class SUMOAdapter:
     def __init__(self, demand_profile: Demand, seed: int, av_rate: float,
                  route_temp: str = "route_template.rou.xml", net_file: str = "network.net.xml",
@@ -12,10 +11,10 @@ class SUMOAdapter:
                  template_folder="SUMOconfig", output_folder="outputs", gui=False, lane_num=4, ramps_num=3):
         curdir = os.path.dirname(os.path.abspath(__file__))
         self.template_folder = os.path.join(curdir, template_folder)
-        self.output_folder = os.path.join(curdir, output_folder, str(av_rate), str(seed))
+        self.output_folder = os.path.join(curdir, output_folder,demand_profile.__str__(), str(av_rate), str(seed))
+        os.makedirs(self.output_folder, exist_ok=True)
         self.av_rate = av_rate
         self.seed = seed
-        os.makedirs(self.output_folder, exist_ok=True)
         self.lane_num = lane_num
         self.ramps_num = ramps_num
         self.network_file = os.path.join(self.template_folder, net_file)
@@ -23,12 +22,7 @@ class SUMOAdapter:
         self.config_template = os.path.join(self.template_folder, cfg_temp)
         self.gui = gui
         self.demand_profile = demand_profile
-        self.config_folder = os.path.join(self.template_folder, demand_profile.__str__(), str(seed))
-        os.makedirs(self.config_folder, exist_ok=True)
-        self.route_file = os.path.join(self.config_folder, f"av_{av_rate}.rou.xml")
-        self.config_file = os.path.join(self.config_folder, f"av_{av_rate}.sumocfg")
 
-        self.create_rou_cfg_files()
 
     def allow_vehicles(self, edge: str = "all", veh_types=None, min_num_pass=0):
         if veh_types is None:
@@ -75,35 +69,53 @@ class SUMOAdapter:
     def close(self):
         traci.close()
 
-    def create_rou_cfg_files(self):
-        self._create_route_file()
-        self._create_config_file()
 
-    def init_simulation(self, output_file="output.xml"):
-        self.output_file = os.path.join(self.output_folder, output_file)
+    def init_simulation(self, policy):
+        policy_name = policy.__str__()
+        output_file_name = f"{policy_name}.xml"
+        config_folder = os.path.join(self.template_folder, self.demand_profile.__str__(), str(self.seed), policy_name)
+        os.makedirs(config_folder, exist_ok=True)
+        self.output_file = os.path.join(self.output_folder, output_file_name)
+        self.route_file = os.path.join(config_folder, f"av_{self.av_rate}.rou.xml")
+        self.config_file = os.path.join(config_folder, f"av_{self.av_rate}.sumocfg")
+        self._create_route_file(policy.veh_kinds, policy.min_num_pass, policy.endToEnd)
+        self._create_config_file()
         self._init_sumo()
 
-    def _create_vType_dist(self, root):
+    def _create_vType_dist(self, root, veh_kinds, min_num_pass, endToEnd=False):
+        if veh_kinds is None:
+            veh_kinds = []
+        if min_num_pass is None:
+            min_num_pass = 6
         # Set vTypeDistribution to contain the probabilities of each vehicle type and the number of passengers
         av_prob = self.av_rate
         hdv_prob = 1 - av_prob
         for vTypeDist in root.findall('vTypeDistribution'):
             vTypeDist.text += '\t'
-            if vTypeDist.attrib['id'] == 'vehicleDist':
-                for k, v in self.demand_profile.prob_pass_av.items():
-                    if av_prob == 0 or v == 0:
-                        continue
-                    prob = round(av_prob * v, 5)
-                    elem = ET.Element('vType', id=f'AV_{k}', color='blue', probability=str(prob), vClass='evehicle')
-                    elem.tail = '\n\t\t'
-                    vTypeDist.append(elem)
+            if vTypeDist.attrib['id'].startswith('vehicleDist'):
                 for k, v in self.demand_profile.prob_pass_hd.items():
-                    if hdv_prob == 0 or v == 0:
-                        continue
                     prob = round(hdv_prob * v, 5)
-                    elem = ET.Element('vType', id=f'HD_{k}', color='red', probability=str(prob), vClass='passenger')
+                    if prob == 0:
+                        continue
+                    veh_class = "private" if int(k) >= min_num_pass and "HD" in veh_kinds else 'passenger'
+                    type_id = f"HD_{k}" if vTypeDist.attrib['id'] == 'vehicleDist' else f"HD_{k}_endToEnd"
+                    elem = ET.Element('vType', id=type_id, color='red', probability=str(prob), vClass=veh_class)
                     elem.tail = '\n\t\t'
                     vTypeDist.append(elem)
+                for k, v in self.demand_profile.prob_pass_av.items():
+                    prob = round(av_prob * v, 5)
+                    if prob == 0:
+                        continue
+                    if vTypeDist.attrib['id'] == 'vehicleDist':
+                        veh_class = "private" if int(k) >= min_num_pass and "AV" in veh_kinds and not endToEnd else 'evehicle'
+                        type_id = f"AV_{k}"
+                    else:
+                        veh_class = "private" if int(k) >= min_num_pass and "AV" in veh_kinds else 'evehicle'
+                        type_id = f"AV_{k}_endToEnd"
+                    elem = ET.Element('vType', id=type_id, color='blue', probability=str(prob), vClass=veh_class)
+                    elem.tail = '\n\t\t'
+                    vTypeDist.append(elem)
+
             elif vTypeDist.attrib['id'] == 'busDist':
                 for k, v in self.demand_profile.prob_pass_bus.items():
                     if v == 0:
@@ -124,11 +136,11 @@ class SUMOAdapter:
         flow.tail = '\n\t'
         root.append(flow)
 
-    def _create_route_file(self):
+    def _create_route_file(self,veh_kinds = None, min_num_pass = None, endToEnd = False):
         tree = ET.parse(self.route_template)
         root = tree.getroot()
 
-        self._create_vType_dist(root)
+        self._create_vType_dist(root, veh_kinds, min_num_pass)
 
         in_junc = "J0"
         out_junc = "J9"
@@ -181,7 +193,9 @@ class SUMOAdapter:
             assert in_out_prob >= 0
             for lane in range(self.lane_num):
                 flow_prob = total_arrival_prob * in_out_prob / self.lane_num
-                self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane)
+                self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
+                                  type_dist="vehicleDist_endToEnd")
+
                 if total_arrival_prob * bus_veh_prop > 0:
                     self._append_flow(root, hour, in_junc, out_junc, flow_prob * bus_veh_prop,
                                       depart_lane=lane, type_dist="busDist")

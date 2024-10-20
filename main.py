@@ -4,7 +4,7 @@ import numpy as np
 
 from SUMO.SUMOAdpater import SUMOAdapter
 import SUMO.demand_profiles as demand_profiles
-import Policies.step_handle_functions as step_handle_functions
+import Policies.static_step_handle_functions as static_step_handle_functions
 from utils.argparse_utils import get_args
 from utils.class_utils import get_all_subclasses
 from Loggers.CSVLogger import CSVLogger
@@ -12,21 +12,16 @@ from Loggers.CSVLogger import CSVLogger
 
 
 def simulate(args, logger=CSVLogger):
-    sumo, min_num_pass, policy = args
-
-    # initialize simulation
-    output_filename = f"{sumo.demand_profile.__str__()}_{policy.__name__}"
-    output_filename += f"_{min_num_pass}" if policy.is_num_pass_dependent else ""
-    sumo.init_simulation(output_file=f"{output_filename}.xml")  # initialize simulation
-
-    # initialize logger:
-    if logger:
-        logger = logger(sumo.output_folder, output_filename, sumo.get_state_dict(0).keys())
-
-    # initialize policy:
+    demand_inst, seed, av_rate, min_num_pass, policy = args
+    sumo = SUMOAdapter(demand_inst, seed, av_rate)
     policy = policy(sumo)
     if policy.is_num_pass_dependent:
         policy.set_num_pass(min_num_pass)
+    sumo.init_simulation(policy)  # initialize simulation
+
+    # initialize logger:
+    if logger:
+        logger = logger(sumo.output_folder, policy.__str__(), sumo.get_state_dict(0).keys())
 
     # run simulation
     t = 0
@@ -49,8 +44,8 @@ def main(args):
     seeds = [np.random.randint(0, 10000) for _ in range(num_exps)]
     av_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] if args.av_rate is None else [args.av_rate]
     pass_range = range(1, 6)
-    policies = get_all_subclasses(step_handle_functions.StepHandleFunction) if args.policy is None\
-        else [getattr(step_handle_functions, args.policy)]
+    policies = get_all_subclasses(static_step_handle_functions.StaticStepHandleFunction) if args.policy is None\
+        else [getattr(static_step_handle_functions, args.policy)]
     simulation_args = []
     for demand in demands:
         demand_inst = demand()
@@ -59,16 +54,13 @@ def main(args):
                 if policy.is_num_pass_dependent:
                     if policy.is_av_rate_dependent:
                         for av_rate in av_rates:
-                            sumo = SUMOAdapter(demand_inst, seed, av_rate)
                             for min_num_pass in pass_range:
-                                simulation_args.append((sumo, min_num_pass, policy))
+                                simulation_args.append((demand_inst, seed, av_rate, min_num_pass, policy))
                     else:
-                        sumo = SUMOAdapter(demand_inst, seed, 0)
                         for min_num_pass in pass_range:
-                            simulation_args.append((sumo, min_num_pass, policy))
+                            simulation_args.append((demand_inst, seed, 0, min_num_pass, policy))
                 else:
-                    sumo = SUMOAdapter(demand_inst, seed, 0)
-                    simulation_args.append((sumo, 0, policy))
+                    simulation_args.append((demand_inst, seed, 0, 0, policy))
     with Pool(args.num_processes) as pool:
         list(tqdm(pool.imap(simulate, simulation_args), total=len(simulation_args)))
 

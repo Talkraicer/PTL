@@ -1,5 +1,5 @@
 import argparse
-from Policies import step_handle_functions
+from Policies import static_step_handle_functions
 
 
 def get_args():

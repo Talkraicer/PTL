@@ -3,6 +3,9 @@
 	<vTypeDistribution id="vehicleDist">
 	</vTypeDistribution>
 
+	<vTypeDistribution id="vehicleDist_endToEnd">
+	</vTypeDistribution>
+
 	<vTypeDistribution id="busDist">
 	</vTypeDistribution>
 </routes>

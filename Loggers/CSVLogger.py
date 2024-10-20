@@ -1,7 +1,7 @@
 import csv
 import pandas as pd
 import os
-from Logger import Logger
+from Loggers.Logger import Logger
 
 
 class CSVLogger(Logger):
