@@ -78,6 +78,7 @@ class SUMOAdapter:
     def create_rou_cfg_files(self):
         self._create_route_file()
         self._create_config_file()
+
     def init_simulation(self, output_file="output.xml"):
         self.output_file = os.path.join(self.output_folder, output_file)
         self._init_sumo()

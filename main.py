@@ -1,35 +1,18 @@
-from SUMO.SUMOAdpater import SUMOAdapter
-from SUMO.demand_profiles import *
-from Policies.step_handle_functions import *
 from multiprocessing.pool import Pool
-import numpy as np
 from tqdm import tqdm
+import numpy as np
+
+from SUMO.SUMOAdpater import SUMOAdapter
+import SUMO.demand_profiles as demand_profiles
+import Policies.step_handle_functions as step_handle_functions
+from utils.argparse_utils import get_args
+from utils.class_utils import get_all_subclasses
 from Loggers.CSVLogger import CSVLogger
-import os
 
-np.random.seed(42)
-MAX_NUM_PROCESS = None  # set to None to use all available cores
-
-
-# Get all policies
-def get_all_subclasses(cls):
-    subclasses = cls.__subclasses__()
-    for subclass in subclasses:
-        subclasses += get_all_subclasses(subclass)
-    return subclasses
-
-
-def clear_older_configs():
-    for file in os.listdir("SUMO/SUMOconfig"):
-        # check if file is a directory
-        if os.path.isdir(file):
-            # remove the directory
-            os.rmdir(file)
 
 
 def simulate(args, logger=CSVLogger):
     sumo, min_num_pass, policy = args
-
 
     # initialize simulation
     output_filename = f"{sumo.demand_profile.__str__()}_{policy.__name__}"
@@ -58,14 +41,17 @@ def simulate(args, logger=CSVLogger):
     sumo.close()
 
 
-def main():
-    clear_older_configs()
-    demands = get_all_subclasses(Demand)
-    seeds = [np.random.randint(0, 10000) for _ in range(10)]
-    av_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+def main(args):
+    demands = get_all_subclasses(demand_profiles.Demand) if args.demand is None \
+        else [getattr(demand_profiles,args.demand)]
+    num_exps = args.num_experiments
+    np.random.seed(args.seed)
+    seeds = [np.random.randint(0, 10000) for _ in range(num_exps)]
+    av_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] if args.av_rate is None else [args.av_rate]
     pass_range = range(1, 6)
-    policies = get_all_subclasses(StepHandleFunction)
-    args = []
+    policies = get_all_subclasses(step_handle_functions.StepHandleFunction) if args.policy is None\
+        else [getattr(step_handle_functions, args.policy)]
+    simulation_args = []
     for demand in demands:
         demand_inst = demand()
         for seed in seeds:
@@ -75,17 +61,17 @@ def main():
                         for av_rate in av_rates:
                             sumo = SUMOAdapter(demand_inst, seed, av_rate)
                             for min_num_pass in pass_range:
-                                args.append((sumo, min_num_pass, policy))
+                                simulation_args.append((sumo, min_num_pass, policy))
                     else:
                         sumo = SUMOAdapter(demand_inst, seed, 0)
                         for min_num_pass in pass_range:
-                            args.append((sumo, min_num_pass, policy))
+                            simulation_args.append((sumo, min_num_pass, policy))
                 else:
                     sumo = SUMOAdapter(demand_inst, seed, 0)
-                    args.append((sumo, 0, policy))
-    with Pool(MAX_NUM_PROCESS) as pool:
-        list(tqdm(pool.imap(simulate, args), total=len(args)))
+                    simulation_args.append((sumo, 0, policy))
+    with Pool(args.num_processes) as pool:
+        list(tqdm(pool.imap(simulate, simulation_args), total=len(simulation_args)))
 
 
 if __name__ == '__main__':
-    main()
+    main(get_args())
