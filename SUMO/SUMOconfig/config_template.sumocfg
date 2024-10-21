@@ -9,9 +9,14 @@
         <net-file value="VSL.net.xml"/>
         <route-files value="VSL.rou.xml"/>
         <junction-taz value="true"/>
+        <additional-files value="VSL.add.xml"/>
     </input>
 
     <random_number>
         <seed value="6242"/>
     </random_number>
+
+    <output>
+        <tripinfo-output value="tripinfo.xml"/>
+    </output>
 </configuration>

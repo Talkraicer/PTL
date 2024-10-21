@@ -75,6 +75,6 @@ class DailyDemand(Demand):
 class TestDemand(DailyDemand):
     def __init__(self):
         super().__init__()
-        self.hour_len = 360
+        self.hour_len = 36
     def __str__(self):
         return "Test"
