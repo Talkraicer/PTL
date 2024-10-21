@@ -9,6 +9,8 @@ from utils.argparse_utils import get_args
 from utils.class_utils import get_all_subclasses
 from Loggers.CSVLogger import CSVLogger
 
+import warnings
+warnings.filterwarnings("ignore", message="API change now handles step as floating point seconds")
 
 
 def simulate(args, logger=None):
