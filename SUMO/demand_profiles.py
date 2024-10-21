@@ -71,3 +71,10 @@ class DailyDemand(Demand):
 
     def __str__(self):
         return "Daily"
+
+class TestDemand(DailyDemand):
+    def __init__(self):
+        super().__init__()
+        self.hour_len = 360
+    def __str__(self):
+        return "Test"

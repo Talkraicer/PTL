@@ -51,7 +51,7 @@ class SUMOAdapter:
                                         traci.lane.getLastStepVehicleIDs(lane)]
         state_dict["num_vehs_in_PTL"] = len(state_dict["veh_ids_in_PTL"])
         state_dict["num_total_vehs"] = len(traci.vehicle.getIDList())
-
+        # get mean vehicles speed
         state_dict["mean_speed"] = np.mean([traci.vehicle.getSpeed(vehID) for vehID in traci.vehicle.getIDList()]) \
             if state_dict["num_total_vehs"] > 0 else 0
         state_dict["mean_speed_in_PTL"] = np.mean(
@@ -80,6 +80,7 @@ class SUMOAdapter:
         self.config_file = os.path.join(config_folder, f"av_{self.av_rate}.sumocfg")
         self._create_route_file(policy.veh_kinds, policy.min_num_pass, policy.endToEnd)
         self._create_config_file()
+        self.raw_dump = os.path.join(self.output_folder, f"{policy_name}_raw_dump.xml")
         self._init_sumo()
 
     def _create_vType_dist(self, root, veh_kinds, min_num_pass, endToEnd=False):
@@ -228,6 +229,7 @@ class SUMOAdapter:
         sumo_binary = self._get_sumo_entrypoint()
         sumo_cmd = [sumo_binary, "-c", self.config_file]
         sumo_cmd += ["--tripinfo-output", self.output_file]
+        sumo_cmd += ["--netstate-dump", self.raw_dump]
         print(sumo_cmd)
         traci.start(sumo_cmd)
 

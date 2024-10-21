@@ -11,7 +11,7 @@ from Loggers.CSVLogger import CSVLogger
 
 
 
-def simulate(args, logger=CSVLogger):
+def simulate(args, logger=None):
     demand_inst, seed, av_rate, min_num_pass, policy = args
     sumo = SUMOAdapter(demand_inst, seed, av_rate)
     policy = policy(sumo)
@@ -26,7 +26,7 @@ def simulate(args, logger=CSVLogger):
     # run simulation
     t = 0
     while not sumo.isFinish():
-        state_dict = sumo.get_state_dict(t)
+        state_dict = {"t": t}
         policy.handle_step(state_dict)
         if logger:
             logger.log(state_dict)
