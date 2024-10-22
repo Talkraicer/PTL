@@ -3,7 +3,7 @@ from results.parse_exp_results import ResultsParser
 import pandas as pd
 import numpy as np
 from multiprocessing import Pool
-
+from tqdm import tqdm
 
 def get_all_results_parsers(outputs_folder):
     results_parsers = []
@@ -87,7 +87,7 @@ def create_metric_results_table(results_parsers, metric,
                 tasks.append((demand, policy, av_rate, vType, metric, results_parsers))
 
     # Use Pool.starmap to process the tasks in parallel
-    results = pool.starmap(process_combination, tasks)
+    results = tqdm(pool.starmap(process_combination, tasks), total=len(tasks))
     pool.close()
     pool.join()
 
