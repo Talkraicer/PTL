@@ -87,7 +87,7 @@ def create_metric_results_table(results_parsers, metric,
                 subcolumns mean and std, and rows of policies
     """
     demands = list(set(map(lambda x: x.demand_name, results_parsers))) if not demands else demands
-    av_rates = list(set(map(lambda x: x.av_rate, results_parsers))).sort() if not av_rates else av_rates
+    av_rates = sorted(list(set(map(lambda x: x.av_rate, results_parsers)))) if not av_rates else av_rates
     policies = list(set(map(lambda x: x.policy_name, results_parsers))) if not policies else policies
 
     if vType:
