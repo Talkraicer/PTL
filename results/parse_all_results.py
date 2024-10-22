@@ -5,12 +5,13 @@ import numpy as np
 from multiprocessing import Pool
 from tqdm import tqdm
 
+
 def parse_experiment(exp_path):
     """Helper function to parse a single experiment path."""
     return ResultsParser(exp_path)
 
+
 def get_all_results_parsers(outputs_folder, demand=None, av_rate=None):
-    results_parsers = []
     demands = os.listdir(outputs_folder) if not demand else [demand]
 
     tasks = []  # List to hold all tasks to be processed in parallel
@@ -32,6 +33,7 @@ def get_all_results_parsers(outputs_folder, demand=None, av_rate=None):
         results_parsers = list(tqdm(pool.imap(parse_experiment, tasks), total=len(tasks)))
 
     return results_parsers
+
 
 def calc_mean_std(df):
     # Calculate mean and standard deviation of each column
@@ -56,23 +58,25 @@ def calc_metric_over_simulations(results_parsers, metric, vType=None):
     means = [rp.mean_metric(metric, vType) for rp in results_parsers]
     return {"mean": np.mean(means), "std": np.std(means)}
 
-def process_combination(demand, policy, av_rate, vType, metric, results_parsers):
-    av_rate_parsers = list(filter(lambda x: x.av_rate == av_rate and x.demand_name == demand
-                                          and x.policy_name == policy, results_parsers))
+
+def process_combination(args):
+    results_parsers,metric, vType, key = args
     if vType:
+        vTypes = ["AV", "HD", "Bus"]
         result = {}
-        for v in vType:
-            vtype_results = calc_metric_over_simulations(av_rate_parsers, metric, v)
-            result[(policy, demand, av_rate, v)] = {"mean": vtype_results["mean"], "std": vtype_results["std"]}
-        return result
+        for v in vTypes:
+            vtype_results = calc_metric_over_simulations(results_parsers, metric, v)
+            result[v] = {"mean": vtype_results["mean"], "std": vtype_results["std"]}
+        return result, key
     else:
-        av_rate_results = calc_metric_over_simulations(av_rate_parsers, metric)
-        return {(policy, demand, av_rate): {"mean": av_rate_results["mean"], "std": av_rate_results["std"]}}
+        av_rate_results = calc_metric_over_simulations(results_parsers, metric)
+        return {"mean": av_rate_results["mean"], "std": av_rate_results["std"]}, key
+
 
 # Function to parallelize
 
 def create_metric_results_table(results_parsers, metric,
-                                demands = None, av_rates=None,policies=None,
+                                demands=None, av_rates=None, policies=None,
                                 vType=False):
     """
     Create a table with the mean and std of a metric for all the results parsers
@@ -88,34 +92,46 @@ def create_metric_results_table(results_parsers, metric,
 
     if vType:
         vTypes = ["AV", "HD", "Bus"]
-        df = pd.DataFrame(index=policies, columns=pd.MultiIndex.from_product([demands,av_rates, vTypes, ["mean", "std"]]))
+        df = pd.DataFrame(index=policies,
+                          columns=pd.MultiIndex.from_product([demands, av_rates, vTypes, ["mean", "std"]]))
     else:
-        df = pd.DataFrame(index=policies, columns=pd.MultiIndex.from_product([demands,av_rates, ["mean", "std"]]))
+        df = pd.DataFrame(index=policies, columns=pd.MultiIndex.from_product([demands, av_rates, ["mean", "std"]]))
 
-    pool = Pool()
     tasks = []
     for demand in demands:
         for policy in policies:
             for av_rate in av_rates:
-                tasks.append((demand, policy, av_rate, vType, metric, results_parsers))
+                task_parsers = list(filter(lambda x: x.av_rate == av_rate and
+                                                     x.demand_name == demand and
+                                                     x.policy_name == policy,
+                                           results_parsers))
+                tasks.append((task_parsers,metric,vType, (policy, demand, av_rate)))
 
     with Pool() as pool:
         # Use imap instead of starmap for progress tracking
-        results = pool.imap_unordered(process_combination, tasks)
-        for result in tqdm(results, total=len(tasks)):
-            for key, value in result.items():
-                if len(key) == 4:  # If vType was used
-                    policy, demand, av_rate, v = key
-                    df.loc[policy, (demand, av_rate, v, "mean")] = value["mean"]
-                    df.loc[policy, (demand, av_rate, v, "std")] = value["std"]
-                else:
-                    policy, demand, av_rate = key
-                    df.loc[policy, (demand, av_rate, "mean")] = value["mean"]
-                    df.loc[policy, (demand, av_rate, "std")] = value["std"]
-
+        results = list(tqdm(pool.imap_unordered(process_combination, tasks), total=len(tasks)))
+    for result, key in results:
+        policy, demand, av_rate = key
+        if vType:  # If vType was used
+            for v in vTypes:
+                df.loc[policy, (demand, av_rate, v, "mean")] = result[v]["mean"]
+                df.loc[policy, (demand, av_rate, v, "std")] = result[v]["std"]
+        else:
+            df.loc[policy, (demand, av_rate, "mean")] = result["mean"]
+            df.loc[policy, (demand, av_rate, "std")] = result["std"]
 
     return df
 
+
 if __name__ == '__main__':
-    parsers = get_all_results_parsers("SUMO/outputs", demand="Daily")
-    create_metric_results_table(parsers,"passDelay", vType=True, demands=["DailyDemand"]).to_csv("passDelay.csv")
+    parsers = get_all_results_parsers("SUMO/outputs")
+    create_metric_results_table(parsers, "passDelay", vType=True).to_csv("passDelay_vType.csv")
+    create_metric_results_table(parsers, "totalDelay", vType=True).to_csv("totalDelay_vType.csv")
+    create_metric_results_table(parsers, "duration", vType=True).to_csv("duration_vType.csv")
+    create_metric_results_table(parsers, "passDuration", vType=True).to_csv("passDuration_vType.csv")
+
+    create_metric_results_table(parsers, "passDelay").to_csv("passDelay.csv")
+    create_metric_results_table(parsers, "totalDelay").to_csv("totalDelay.csv")
+    create_metric_results_table(parsers, "duration").to_csv("duration.csv")
+    create_metric_results_table(parsers, "passDuration").to_csv("passDuration.csv")
+

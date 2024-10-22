@@ -33,8 +33,7 @@ class ResultsParser:
         tree = ET.parse(self.tripinfo_file)
         root = tree.getroot()
 
-        dict = {"duration": [], "departDelay": [], "routeLength": [], "vType": [], "timeLoss": [], "id": [],
-                "depart": []}
+        dict = {"duration": [], "departDelay": [], "routeLength": [], "vType": [], "timeLoss": [], "id": []}
         for tripinfo in root.findall('tripinfo'):
             for key in dict.keys():
                 dict[key].append(tripinfo.get(key))
