@@ -2,6 +2,8 @@ import os
 from results.parse_exp_results import ResultsParser
 import pandas as pd
 import numpy as np
+from multiprocessing import Pool
+
 
 def get_all_results_parsers(outputs_folder):
     results_parsers = []
@@ -41,8 +43,24 @@ def calc_metric_over_simulations(results_parsers, metric, vType=None):
     means = [rp.mean_metric(metric, vType) for rp in results_parsers]
     return {"mean": np.mean(means), "std": np.std(means)}
 
+def process_combination(demand, policy, av_rate, vType, metric, results_parsers):
+    av_rate_parsers = list(filter(lambda x: x.av_rate == av_rate and x.demand_name == demand
+                                          and x.policy_name == policy, results_parsers))
+    if vType:
+        result = {}
+        for v in vType:
+            vtype_results = calc_metric_over_simulations(av_rate_parsers, metric, v)
+            result[(policy, demand, av_rate, v)] = {"mean": vtype_results["mean"], "std": vtype_results["std"]}
+        return result
+    else:
+        av_rate_results = calc_metric_over_simulations(av_rate_parsers, metric)
+        return {(policy, demand, av_rate): {"mean": av_rate_results["mean"], "std": av_rate_results["std"]}}
 
-def create_metric_results_table(results_parsers, metric, vType=False):
+# Function to parallelize
+
+def create_metric_results_table(results_parsers, metric,
+                                demands = None, av_rates=None,policies=None,
+                                vType=False):
     """
     Create a table with the mean and std of a metric for all the results parsers
     :param results_parsers: a list of ResultsParser objects
@@ -51,31 +69,42 @@ def create_metric_results_table(results_parsers, metric, vType=False):
     :return: a dataframe of columns demand, subcolumns of av_rates, (optional) subcolumns of vTypes,
                 subcolumns mean and std, and rows of policies
     """
-    demands = list(set(map(lambda x: x.demand_name, results_parsers)))
-    av_rates = list(set(map(lambda x: x.av_rate, results_parsers)))
-    policies = list(set(map(lambda x: x.policy_name, results_parsers)))
+    demands = list(set(map(lambda x: x.demand_name, results_parsers))) if not demands else demands
+    av_rates = list(set(map(lambda x: x.av_rate, results_parsers))) if not av_rates else av_rates
+    policies = list(set(map(lambda x: x.policy_name, results_parsers))) if not policies else policies
 
     if vType:
         vTypes = ["AV", "HD", "Bus"]
         df = pd.DataFrame(index=policies, columns=pd.MultiIndex.from_product([demands,av_rates, vTypes, ["mean", "std"]]))
     else:
         df = pd.DataFrame(index=policies, columns=pd.MultiIndex.from_product([demands,av_rates, ["mean", "std"]]))
+
+    pool = Pool()
+    tasks = []
     for demand in demands:
         for policy in policies:
             for av_rate in av_rates:
-                av_rate_parsers = list(filter(lambda x: x.av_rate == av_rate and x.demand_name == demand
-                                                        and x.policy_name == policy, results_parsers))
-                if vType:
-                    for vType in vTypes:
-                        vtype_results = calc_metric_over_simulations(av_rate_parsers, metric, vType)
-                        df.loc[policy, (demand, av_rate, vType, "mean")] = vtype_results["mean"]
-                        df.loc[policy, (demand, av_rate, vType, "std")] = vtype_results["std"]
-                else:
-                    av_rate_results = calc_metric_over_simulations(av_rate_parsers, metric)
-                    df.loc[policy, (demand, av_rate, "mean")] = av_rate_results["mean"]
-                    df.loc[policy, (demand, av_rate, "std")] = av_rate_results["std"]
-        return df
+                tasks.append((demand, policy, av_rate, vType, metric, results_parsers))
+
+    # Use Pool.starmap to process the tasks in parallel
+    results = pool.starmap(process_combination, tasks)
+    pool.close()
+    pool.join()
+
+    # Combine the results back into a DataFrame
+    for result in results:
+        for key, value in result.items():
+            if len(key) == 4:  # If vType was used
+                policy, demand, av_rate, v = key
+                df.loc[policy, (demand, av_rate, v, "mean")] = value["mean"]
+                df.loc[policy, (demand, av_rate, v, "std")] = value["std"]
+            else:
+                policy, demand, av_rate = key
+                df.loc[policy, (demand, av_rate, "mean")] = value["mean"]
+                df.loc[policy, (demand, av_rate, "std")] = value["std"]
+
+    return df
 
 if __name__ == '__main__':
     parsers = get_all_results_parsers("../SUMO/outputs")
-    create_metric_results_table(parsers, "passDelay", vType=True).to_csv("passDelay.csv")
+    create_metric_results_table(parsers, "passDelay", vType=True, demands=["DailyDemand"]).to_csv("passDelay.csv")
