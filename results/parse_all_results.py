@@ -86,22 +86,20 @@ def create_metric_results_table(results_parsers, metric,
             for av_rate in av_rates:
                 tasks.append((demand, policy, av_rate, vType, metric, results_parsers))
 
-    # Use Pool.starmap to process the tasks in parallel
-    results = tqdm(pool.starmap(process_combination, tasks), total=len(tasks))
-    pool.close()
-    pool.join()
+    with Pool() as pool:
+        # Use imap instead of starmap for progress tracking
+        results = pool.imap_unordered(process_combination, tasks)
+        for result in tqdm(results, total=len(tasks)):
+            for key, value in result.items():
+                if len(key) == 4:  # If vType was used
+                    policy, demand, av_rate, v = key
+                    df.loc[policy, (demand, av_rate, v, "mean")] = value["mean"]
+                    df.loc[policy, (demand, av_rate, v, "std")] = value["std"]
+                else:
+                    policy, demand, av_rate = key
+                    df.loc[policy, (demand, av_rate, "mean")] = value["mean"]
+                    df.loc[policy, (demand, av_rate, "std")] = value["std"]
 
-    # Combine the results back into a DataFrame
-    for result in results:
-        for key, value in result.items():
-            if len(key) == 4:  # If vType was used
-                policy, demand, av_rate, v = key
-                df.loc[policy, (demand, av_rate, v, "mean")] = value["mean"]
-                df.loc[policy, (demand, av_rate, v, "std")] = value["std"]
-            else:
-                policy, demand, av_rate = key
-                df.loc[policy, (demand, av_rate, "mean")] = value["mean"]
-                df.loc[policy, (demand, av_rate, "std")] = value["std"]
 
     return df
 
