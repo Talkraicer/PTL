@@ -2,15 +2,17 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 import warnings
 warnings.filterwarnings("ignore")
+from results_utils import split_all_parts
 
 class ResultsParser:
     def __init__(self, exp_file, period=60):
         self.tripinfo_file = exp_file + "_tripinfo.xml"
         self.lanes_file = exp_file + "_lanes.xml"
-        self.policy_name = exp_file.split("\\")[-1]
-        self.seed = int(self.tripinfo_file.split("\\")[-2])
-        self.av_rate = float(self.tripinfo_file.split("\\")[-3])
-        self.demand_name = str(self.tripinfo_file.split("\\")[-4])
+        parts = split_all_parts(tripinfo_file)
+        self.policy_name = parts[-1]
+        self.seed = int(parts[-2])
+        self.av_rate = float(parts[-3])
+        self.demand_name = str(parts[-4])
 
         self.tripinfo_df = self._parse_tripinfo_output()
         self.PTL_lanes = ["E1_4", "E2_3", "E3_4", "E4_3", "E5_4", "E6_3"]
