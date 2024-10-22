@@ -14,7 +14,7 @@ def get_all_results_parsers(outputs_folder):
                 experiments = list(set(map(lambda x: "_".join(x.split(".")[0].split("_")[:-1]),
                                            os.listdir(seed_folder))))
                 for experiment in experiments:
-                    exp_path = seed_folder + "\\"+experiment
+                    exp_path = seed_folder + "/"+experiment
                     results_parsers.append(ResultsParser(exp_path))
     return results_parsers
 
