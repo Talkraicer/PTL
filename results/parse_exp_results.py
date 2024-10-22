@@ -8,7 +8,7 @@ class ResultsParser:
     def __init__(self, exp_file, period=60):
         self.tripinfo_file = exp_file + "_tripinfo.xml"
         self.lanes_file = exp_file + "_lanes.xml"
-        parts = split_all_parts(tripinfo_file)
+        parts = split_all_parts(self.tripinfo_file)
         self.policy_name = parts[-1]
         self.seed = int(parts[-2])
         self.av_rate = float(parts[-3])
