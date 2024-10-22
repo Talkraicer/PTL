@@ -27,7 +27,8 @@ def get_all_results_parsers(outputs_folder, demand=None, av_rate=None):
                 for experiment in experiments:
                     exp_path = os.path.join(seed_folder, experiment)
                     tasks.append(exp_path)  # Collecting paths to process
-
+    with open("tasks.txt", "w") as f:
+        f.write("\n".join(tasks))
     # Use multiprocessing to parse experiments in parallel with tqdm
     with Pool() as pool:
         results_parsers = list(tqdm(pool.imap(parse_experiment, tasks), total=len(tasks)))
@@ -88,7 +89,7 @@ def create_metric_results_table(results_parsers, metric,
     """
     demands = list(set(map(lambda x: x.demand_name, results_parsers))) if not demands else demands
     av_rates = sorted(list(set(map(lambda x: x.av_rate, results_parsers)))) if not av_rates else av_rates
-    policies = list(set(map(lambda x: x.policy_name, results_parsers))) if not policies else policies
+    policies = sorted(list(set(map(lambda x: x.policy_name, results_parsers)))) if not policies else policies
 
     if vType:
         vTypes = ["AV", "HD", "Bus"]
