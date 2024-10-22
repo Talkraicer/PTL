@@ -5,19 +5,32 @@ import numpy as np
 from multiprocessing import Pool
 from tqdm import tqdm
 
-def get_all_results_parsers(outputs_folder):
+def parse_experiment(exp_path):
+    """Helper function to parse a single experiment path."""
+    return ResultsParser(exp_path)
+
+def get_all_results_parsers(outputs_folder, demand=None, av_rate=None):
     results_parsers = []
-    for demand in os.listdir(outputs_folder):
-        demand_folder = os.path.join(outputs_folder,demand)
-        for av_rate in os.listdir(demand_folder):
+    demands = os.listdir(outputs_folder) if not demand else [demand]
+
+    tasks = []  # List to hold all tasks to be processed in parallel
+    for demand in demands:
+        demand_folder = os.path.join(outputs_folder, demand)
+        av_rates = os.listdir(demand_folder) if not av_rate else [av_rate]
+        for av_rate in av_rates:
             av_rate_folder = os.path.join(demand_folder, av_rate)
             for seed in os.listdir(av_rate_folder):
                 seed_folder = os.path.join(av_rate_folder, seed)
                 experiments = list(set(map(lambda x: "_".join(x.split(".")[0].split("_")[:-1]),
                                            os.listdir(seed_folder))))
                 for experiment in experiments:
-                    exp_path = seed_folder + "/"+experiment
-                    results_parsers.append(ResultsParser(exp_path))
+                    exp_path = os.path.join(seed_folder, experiment)
+                    tasks.append(exp_path)  # Collecting paths to process
+
+    # Use multiprocessing to parse experiments in parallel with tqdm
+    with Pool() as pool:
+        results_parsers = list(tqdm(pool.imap(parse_experiment, tasks), total=len(tasks)))
+
     return results_parsers
 
 def calc_mean_std(df):
@@ -104,5 +117,5 @@ def create_metric_results_table(results_parsers, metric,
     return df
 
 if __name__ == '__main__':
-    parsers = get_all_results_parsers("SUMO/outputs")
+    parsers = get_all_results_parsers("SUMO/outputs", demand="DailyDemand")
     create_metric_results_table(parsers,"passDelay", vType=True, demands=["DailyDemand"]).to_csv("passDelay.csv")
