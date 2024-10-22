@@ -1,8 +1,7 @@
 import os
-from Results.parse_exp_results import ResultsParser
+from results.parse_exp_results import ResultsParser
 import pandas as pd
 import numpy as np
-
 
 def get_all_results_parsers(outputs_folder):
     results_parsers = []
@@ -69,13 +68,14 @@ def create_metric_results_table(results_parsers, metric, vType=False):
                 if vType:
                     for vType in vTypes:
                         vtype_results = calc_metric_over_simulations(av_rate_parsers, metric, vType)
-                        df.loc[policy, (av_rate, vType, "mean")] = vtype_results["mean"]
-                        df.loc[policy, (av_rate, vType, "std")] = vtype_results["std"]
+                        df.loc[policy, (demand, av_rate, vType, "mean")] = vtype_results["mean"]
+                        df.loc[policy, (demand, av_rate, vType, "std")] = vtype_results["std"]
                 else:
-                    df.loc[policy, (av_rate, "mean")] = calc_metric_over_simulations(av_rate_parsers, metric)["mean"]
-                    df.loc[policy, (av_rate, "std")] = calc_metric_over_simulations(av_rate_parsers, metric)["std"]
+                    av_rate_results = calc_metric_over_simulations(av_rate_parsers, metric)
+                    df.loc[policy, (demand, av_rate, "mean")] = av_rate_results["mean"]
+                    df.loc[policy, (demand, av_rate, "std")] = av_rate_results["std"]
         return df
 
 if __name__ == '__main__':
-    parsers = get_all_results_parsers("SUMO/outputs")
+    parsers = get_all_results_parsers("../SUMO/outputs")
     create_metric_results_table(parsers, "passDelay", vType=True).to_csv("passDelay.csv")
