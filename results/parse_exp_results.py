@@ -1,8 +1,8 @@
 import pandas as pd
 import xml.etree.ElementTree as ET
+from results.results_utils import split_all_parts
 import warnings
 warnings.filterwarnings("ignore")
-from results_utils import split_all_parts
 
 class ResultsParser:
     def __init__(self, exp_file, period=60):
