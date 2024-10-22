@@ -11,13 +11,13 @@ def parse_experiment(exp_path):
     return ResultsParser(exp_path)
 
 
-def get_all_results_parsers(outputs_folder, demand=None, av_rate=None):
-    demands = os.listdir(outputs_folder) if not demand else [demand]
+def get_all_results_parsers(outputs_folder, one_demand=None, one_av_rate=None):
+    demands = os.listdir(outputs_folder) if not one_demand else [one_demand]
 
     tasks = []  # List to hold all tasks to be processed in parallel
     for demand in demands:
         demand_folder = os.path.join(outputs_folder, demand)
-        av_rates = os.listdir(demand_folder) if not av_rate else [av_rate]
+        av_rates = os.listdir(demand_folder) if not one_av_rate else [one_av_rate]
         for av_rate in av_rates:
             av_rate_folder = os.path.join(demand_folder, av_rate)
             for seed in os.listdir(av_rate_folder):
