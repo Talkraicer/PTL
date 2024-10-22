@@ -1,3 +1,5 @@
+import os.path
+
 import pandas as pd
 import xml.etree.ElementTree as ET
 from results.results_utils import split_all_parts
@@ -14,7 +16,12 @@ class ResultsParser:
         self.av_rate = float(parts[-3])
         self.demand_name = str(parts[-4])
 
-        self.tripinfo_df = self._parse_tripinfo_output()
+        if os.path.exists(exp_file+"tripinfo.pkl"):
+            self.tripinfo_df = pd.read_pickle(exp_file+"tripinfo.pkl")
+        else:
+            self.tripinfo_df = self._parse_tripinfo_output()
+            self.tripinfo_df.to_pickle(exp_file+"tripinfo.pkl")
+
         self.PTL_lanes = ["E1_4", "E2_3", "E3_4", "E4_3", "E5_4", "E6_3"]
         self.occupancy_df, self.speed_df, self.density_df, self.num_vehs = {}, {}, {}, {}
         self.period = period

@@ -125,13 +125,35 @@ def create_metric_results_table(results_parsers, metric,
 
 if __name__ == '__main__':
     parsers = get_all_results_parsers("SUMO/outputs")
-    create_metric_results_table(parsers, "passDelay", vType=True).to_csv("passDelay_vType.csv")
-    create_metric_results_table(parsers, "totalDelay", vType=True).to_csv("totalDelay_vType.csv")
-    create_metric_results_table(parsers, "duration", vType=True).to_csv("duration_vType.csv")
-    create_metric_results_table(parsers, "passDuration", vType=True).to_csv("passDuration_vType.csv")
+    res = create_metric_results_table(parsers, "passDelay", vType=True)
+    res.to_csv("passDelay_vType.csv")
+    res.to_pickle("passDelay_vType.pkl")
 
-    create_metric_results_table(parsers, "passDelay").to_csv("passDelay.csv")
-    create_metric_results_table(parsers, "totalDelay").to_csv("totalDelay.csv")
-    create_metric_results_table(parsers, "duration").to_csv("duration.csv")
-    create_metric_results_table(parsers, "passDuration").to_csv("passDuration.csv")
+    res = create_metric_results_table(parsers, "totalDelay", vType=True)
+    res.to_csv("totalDelay_vType.csv")
+    res.to_pickle("totalDelay_vType.pkl")
+
+    res = create_metric_results_table(parsers, "duration", vType=True)
+    res.to_csv("duration_vType.csv")
+    res.to_pickle("duration_vType.pkl")
+
+    res = create_metric_results_table(parsers, "passDuration", vType=True)
+    res.to_csv("passDuration_vType.csv")
+    res.to_pickle("passDuration_vType.pkl")
+
+    res = create_metric_results_table(parsers, "passDelay")
+    res.to_csv("passDelay.csv")
+    res.to_pickle("passDelay.pkl")
+
+    res = create_metric_results_table(parsers, "totalDelay")
+    res.to_csv("totalDelay.csv")
+    res.to_pickle("totalDelay.pkl")
+
+    res = create_metric_results_table(parsers, "duration")
+    res.to_csv("duration.csv")
+    res.to_pickle("duration.pkl")
+
+    res = create_metric_results_table(parsers, "passDuration")
+    res.to_csv("passDuration.csv")
+    res.to_pickle("passDuration.pkl")
 
