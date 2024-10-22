@@ -1,7 +1,6 @@
 import traci
 from SUMO.SUMOAdpater import SUMOAdapter
 
-
 class StaticStepHandleFunction:
     is_num_pass_dependent = False
     is_av_rate_dependent = False

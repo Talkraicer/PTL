@@ -1,34 +1,34 @@
 import pandas as pd
 import xml.etree.ElementTree as ET
-from Loggers.Logger import Logger
-
+import warnings
+warnings.filterwarnings("ignore")
 
 class ResultsParser:
-    def __init__(self, sumo_output_file, logger_output_file=None, logger=None, av_rate=None):
-        assert logger_output_file is not None or logger is not None, "Either logger_output_file or logger must be provided"
-        self.exp_name = sumo_output_file.split("/")[-1].split(".")[0]
-        self.demand_name = self.exp_name.split("_")[0]
-        self.policy_name = "_".join(self.exp_name.split("_")[1:])
-        self.av_rate = av_rate
+    def __init__(self, exp_file, period=60):
+        self.tripinfo_file = exp_file + "_tripinfo.xml"
+        self.lanes_file = exp_file + "_lanes.xml"
+        self.policy_name = exp_file.split("\\")[-1]
+        self.seed = int(self.tripinfo_file.split("\\")[-2])
+        self.av_rate = float(self.tripinfo_file.split("\\")[-3])
+        self.demand_name = str(self.tripinfo_file.split("\\")[-4])
 
-        self.sumo_output_file = sumo_output_file
-        self.sumo_df = self._parse_sumo_output()
+        self.tripinfo_df = self._parse_tripinfo_output()
+        self.PTL_lanes = ["E1_4", "E2_3", "E3_4", "E4_3", "E5_4", "E6_3"]
+        self.occupancy_df, self.speed_df, self.density_df, self.num_vehs = {}, {}, {}, {}
+        self.period = period
+        self._parse_lanes_output()
 
-        if logger_output_file is not None:
-            self.logger_output_file = logger_output_file
-            self.logger_df = pd.read_csv(logger_output_file, delimiter=";")
-        else:
-            self.logger = logger
-            self.logger_df = logger.get_df()
+        self.lanes_metrics_map = {"speed": self.speed_df, "occupancy": self.occupancy_df,
+                                  "num_vehs": self.num_vehs, "density": self.density_df}
 
-    def _parse_sumo_output(self):
+    def _parse_tripinfo_output(self):
         """
         Parse the XML file into pd dataframe`
         :param output_file: path to the output file (XML)
         :return: pd dataframe of the output file, with the following columns:
-                    ['id', 'vType', 'numPass', 'duration, 'totalDelay', 'passDelay']
+                    ['id', 'vType', 'numPass', 'duration, 'totalDelay', 'passDelay', 'passDuration']
         """
-        tree = ET.parse(self.sumo_output_file)
+        tree = ET.parse(self.tripinfo_file)
         root = tree.getroot()
 
         dict = {"duration": [], "departDelay": [], "routeLength": [], "vType": [], "timeLoss": [], "id": [],
@@ -43,38 +43,104 @@ class ResultsParser:
         df["vType"] = df["vType"].apply(lambda x: x.split("_")[0])
         df["duration"] = df["duration"].astype(float)
         df["passDelay"] = df["totalDelay"] * df["numPass"]
-        return df[["id", "vType", "numPass", "duration", "totalDelay", "passDelay"]]
+        df["passDuration"] = df["duration"] * df["numPass"]
+        return df[["id", "vType", "numPass", "duration", "totalDelay", "passDelay", "passDuration"]]
 
-    def _validate_metric(self, metric):
-        assert metric in self.sumo_df.columns, f"Metric {metric} is not in the sumo output file"
+    def _append_all_dataframes(self, key, value):
+        if key not in self.speed_df:
+            self.speed_df[key] = []
+            self.occupancy_df[key] = []
+            self.density_df[key] = []
+            self.num_vehs[key] = []
+            if value is None:
+                return
+        self.speed_df[key].append(value)
+        self.occupancy_df[key].append(value)
+        self.density_df[key].append(value)
+        self.num_vehs[key].append(value)
 
-    def mean_metric(self, metric):
+    def _switch_all_dataframes(self):
+        self.speed_df = pd.DataFrame(self.speed_df).set_index("time").fillna(0)
+        self.occupancy_df = pd.DataFrame(self.occupancy_df).set_index("time").fillna(0)
+        self.density_df = pd.DataFrame(self.density_df).set_index("time").fillna(0)
+        self.num_vehs = pd.DataFrame(self.num_vehs).set_index("time").fillna(0)
+
+    def _parse_lanes_output(self):
+        """
+        Parse the XML file into pd dataframe`
+        :param output_file: path to the output file (XML)
+        :return: pd dataframe of the output file, with the following columns:
+        """
+        tree = ET.parse(self.lanes_file)
+        root = tree.getroot()
+        for interval in root.findall('interval'):
+            time = interval.get('end')
+            self._append_all_dataframes("time", time)
+            for edge in interval.findall('edge'):
+                for lane in edge.findall('lane'):
+                    lane_id = lane.get('id')
+                    if lane_id not in self.speed_df:
+                        self._append_all_dataframes(lane_id, None)
+                    self.speed_df[lane_id].append(lane.get('speed'))
+                    self.occupancy_df[lane_id].append(lane.get('occupancy'))
+                    self.density_df[lane_id].append(lane.get('density'))
+                    self.num_vehs[lane_id].append(float(lane.get('sampledSeconds')) / self.period)
+        self._switch_all_dataframes()
+
+    def _validate_tripinfo_metric(self, metric):
+        assert metric in self.tripinfo_df.columns, f"Metric {metric} is not in the sumo output file"
+
+    def mean_metric(self, metric, vType=None):
         """
         Calculate the mean of a metric for all vehicles in the simulation
         :param metric: the metric to calculate the mean for
         :return: a float representing the mean of the metric
         """
-        self._validate_metric(metric)
-        return self.sumo_df[metric].mean().values[0]
+        self._validate_tripinfo_metric(metric)
+        tripinfo = self.tripinfo_df
+        if vType:
+            tripinfo = self.tripinfo_df[self.tripinfo_df["vType"] == vType]
+        if "pass" in metric:
+            return tripinfo[metric].mean()/ tripinfo["numPass"].sum()
+        return tripinfo[metric].mean()
 
-    def mean_metric_vType(self, metric):
-        """
-        Calculate the mean of a metric for all vehicle types in the simulation
-        :param metric: the metric to calculate the mean for
-        :return: a dictionary with the vehicle types as keys and the mean of the metric for each vehicle type as values
-        """
-        self._validate_metric(metric)
-        return self.sumo_df.groupby("vType")[metric].mean().to_dict()
 
-    def mean_metric_PTL(self, metric):
+    def num_vehs_PTL(self):
         """
-        Calculate the mean of a metric for vehicles that have been in the PTL and vehicles that have not been in the PTL
-        :param metric: the metric to calculate the mean for
-        :return: a dictionary with the mean of the metric for vehicles that have been in the PTL and vehicles that have not
+        Calculate the number of vehicles in the PTL lanes
+        :return: a dictionary with the PTL lanes as keys and the number of vehicles in each lane as values
         """
-        self._validate_metric(metric)
-        veh_ids_been_in_PTL = list(set(sum(self.logger_df['veh_ids_in_PTL'], [])))
-        veh_ids_not_been_in_PTL = list(set(self.sumo_df['id']) - set(veh_ids_been_in_PTL))
-        PTL_mean_vehicle_delay = self.sumo_df[self.sumo_df['id'].isin(veh_ids_been_in_PTL)][metric].mean().values[0]
-        not_PTL_mean_vehicle_delay = self.sumo_df[self.sumo_df['id'].isin(veh_ids_not_been_in_PTL)][metric].mean().values[0]
-        return {"been_in_PTL": PTL_mean_vehicle_delay, "not_been_in_PTL": not_PTL_mean_vehicle_delay}
+        return self.num_vehs[self.PTL_lanes].apply(sum, axis=1)
+
+    def num_vehs_all_lanes(self):
+        """
+        Calculate the number of vehicles in all lanes
+        :return: a dictionary with the lanes as keys and the number of vehicles in each lane as values
+        """
+        return self.num_vehs.apply(sum, axis=1)
+
+    def mean_speed_PTL(self):
+        """
+        Calculate the mean speed of vehicles in the PTL lanes
+        :return: a dictionary with the PTL lanes as keys and the mean speed of vehicles in each lane as values
+        """
+        # multiply speed by number of vehicles in each lane
+        weighted_speed = self.speed_df[self.PTL_lanes].astype(float)*self.num_vehs[self.PTL_lanes]
+        avg_speed = weighted_speed.apply(sum,axis=1) / self.num_vehs[self.PTL_lanes].apply(sum,axis=1)
+        return avg_speed.fillna(0)
+
+    def mean_speed_all_lanes(self):
+        """
+        Calculate the mean speed of vehicles in all lanes
+        :return: a dictionary with the lanes as keys and the mean speed of vehicles in each lane as values
+        """
+        # multiply speed by number of vehicles in each lane
+        weighted_speed = self.speed_df.astype(float)*self.num_vehs
+        avg_speed = weighted_speed.apply(sum,axis=1) / self.num_vehs.apply(sum,axis=1)
+        return avg_speed.fillna(0)
+
+if __name__ == '__main__':
+    tripinfo_file = "../SUMO/outputs/Test/0/0/Nothing_tripinfo.xml"
+    lanes_file = "../SUMO/outputs/Test/0/0/Nothing_lanes.xml"
+    parser = ResultsParser(tripinfo_file, lanes_file)
+    print(parser.mean_speed_all_lanes())
