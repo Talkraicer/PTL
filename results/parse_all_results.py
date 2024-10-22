@@ -1,4 +1,6 @@
 import os
+import pickle
+
 from results.parse_exp_results import ResultsParser
 import pandas as pd
 import numpy as np
@@ -15,6 +17,7 @@ def get_all_results_parsers(outputs_folder, one_demand=None, one_av_rate=None):
     demands = os.listdir(outputs_folder) if not one_demand else [one_demand]
 
     tasks = []  # List to hold all tasks to be processed in parallel
+    results_parsers = []
     for demand in demands:
         demand_folder = os.path.join(outputs_folder, demand)
         av_rates = os.listdir(demand_folder) if not one_av_rate else [one_av_rate]
@@ -26,12 +29,12 @@ def get_all_results_parsers(outputs_folder, one_demand=None, one_av_rate=None):
                                            os.listdir(seed_folder))))
                 for experiment in experiments:
                     exp_path = os.path.join(seed_folder, experiment)
+                    if exp_path + ".pkl" in os.listdir(seed_folder):
+                        results_parsers.append(pickle.load(open(exp_path + ".pkl", "rb")))
                     tasks.append(exp_path)  # Collecting paths to process
-    with open("tasks.txt", "w") as f:
-        f.write("\n".join(tasks))
     # Use multiprocessing to parse experiments in parallel with tqdm
     with Pool() as pool:
-        results_parsers = list(tqdm(pool.imap(parse_experiment, tasks), total=len(tasks)))
+        results_parsers += list(tqdm(pool.imap(parse_experiment, tasks), total=len(tasks)))
 
     return results_parsers
 
@@ -61,7 +64,7 @@ def calc_metric_over_simulations(results_parsers, metric, vType=None):
 
 
 def process_combination(args):
-    results_parsers,metric, vType, key = args
+    results_parsers, metric, vType, key = args
     if vType:
         vTypes = ["AV", "HD", "Bus"]
         result = {}
@@ -106,7 +109,7 @@ def create_metric_results_table(results_parsers, metric,
                                                      x.demand_name == demand and
                                                      x.policy_name == policy,
                                            results_parsers))
-                tasks.append((task_parsers,metric,vType, (policy, demand, av_rate)))
+                tasks.append((task_parsers, metric, vType, (policy, demand, av_rate)))
 
     with Pool() as pool:
         # Use imap instead of starmap for progress tracking
@@ -124,37 +127,22 @@ def create_metric_results_table(results_parsers, metric,
     return df
 
 
+def create_speeds_plot(results_parsers,
+                       demands=None, av_rates=None, policies=None,
+                       ):
+    demands = list(set(map(lambda x: x.demand_name, results_parsers))) if not demands else demands
+    av_rates = sorted(list(set(map(lambda x: x.av_rate, results_parsers)))) if not av_rates else av_rates
+    policies = sorted(list(set(map(lambda x: x.policy_name, results_parsers)))) if not policies else policies
+
+
 if __name__ == '__main__':
     parsers = get_all_results_parsers("SUMO/outputs")
-    res = create_metric_results_table(parsers, "passDelay", vType=True)
-    res.to_csv("passDelay_vType.csv")
-    res.to_pickle("passDelay_vType.pkl")
+    output_path = "results/output_results"
+    for metric in ["passDelay", "totalDelay", "duration", "passDuration"]:
+        res = create_metric_results_table(parsers, metric)
+        res.to_csv(os.path.join(output_path,f"{metric}.csv"))
+        res.to_pickle(os.path.join(output_path,f"{metric}.pkl"))
 
-    res = create_metric_results_table(parsers, "totalDelay", vType=True)
-    res.to_csv("totalDelay_vType.csv")
-    res.to_pickle("totalDelay_vType.pkl")
-
-    res = create_metric_results_table(parsers, "duration", vType=True)
-    res.to_csv("duration_vType.csv")
-    res.to_pickle("duration_vType.pkl")
-
-    res = create_metric_results_table(parsers, "passDuration", vType=True)
-    res.to_csv("passDuration_vType.csv")
-    res.to_pickle("passDuration_vType.pkl")
-
-    res = create_metric_results_table(parsers, "passDelay")
-    res.to_csv("passDelay.csv")
-    res.to_pickle("passDelay.pkl")
-
-    res = create_metric_results_table(parsers, "totalDelay")
-    res.to_csv("totalDelay.csv")
-    res.to_pickle("totalDelay.pkl")
-
-    res = create_metric_results_table(parsers, "duration")
-    res.to_csv("duration.csv")
-    res.to_pickle("duration.pkl")
-
-    res = create_metric_results_table(parsers, "passDuration")
-    res.to_csv("passDuration.csv")
-    res.to_pickle("passDuration.pkl")
-
+        res = create_metric_results_table(parsers, metric, vType=True)
+        res.to_csv(os.path.join(output_path,f"{metric}_vType.csv"))
+        res.to_pickle(os.path.join(output_path,f"{metric}_vType.pkl"))

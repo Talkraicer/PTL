@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from results.results_utils import split_all_parts
 import warnings
 warnings.filterwarnings("ignore")
-
+import pickle
 class ResultsParser:
     def __init__(self, exp_file, period=60):
         self.tripinfo_file = exp_file + "_tripinfo.xml"
@@ -29,6 +29,9 @@ class ResultsParser:
 
         self.lanes_metrics_map = {"speed": self.speed_df, "occupancy": self.occupancy_df,
                                   "num_vehs": self.num_vehs, "density": self.density_df}
+
+        pickle.dump(self, open(exp_file + ".pkl", "wb"))
+
 
     def _parse_tripinfo_output(self):
         """
