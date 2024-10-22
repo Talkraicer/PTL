@@ -106,5 +106,5 @@ def create_metric_results_table(results_parsers, metric,
     return df
 
 if __name__ == '__main__':
-    parsers = get_all_results_parsers("../SUMO/outputs")
-    create_metric_results_table(parsers, "passDelay", vType=True, demands=["DailyDemand"]).to_csv("passDelay.csv")
+    parsers = get_all_results_parsers("SUMO/outputs")
+    create_metric_results_table(parsers,"passDelay", vType=True, demands=["DailyDemand"]).to_csv("passDelay.csv")
