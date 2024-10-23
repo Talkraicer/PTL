@@ -10,12 +10,13 @@ from utils.class_utils import get_all_subclasses
 from Loggers.CSVLogger import CSVLogger
 
 import warnings
+
 warnings.filterwarnings("ignore", message="API change now handles step as floating point seconds")
 
 
 def simulate(args, logger=None):
-    demand_inst, seed, av_rate, min_num_pass, policy = args
-    sumo = SUMOAdapter(demand_inst, seed, av_rate)
+    demand_inst, seed, av_rate, min_num_pass, policy, closed = args
+    sumo = SUMOAdapter(demand_inst, seed, av_rate, closed)
     policy = policy(sumo)
     if policy.is_num_pass_dependent:
         policy.set_num_pass(min_num_pass)
@@ -40,15 +41,16 @@ def simulate(args, logger=None):
 
 def main(args):
     demands = get_all_subclasses(demand_profiles.Demand) if args.demand is None \
-        else [getattr(demand_profiles,args.demand)]
+        else [getattr(demand_profiles, args.demand)]
     num_exps = args.num_experiments
     np.random.seed(args.seed)
     seeds = [np.random.randint(0, 10000) for _ in range(num_exps)]
     av_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] if args.av_rate is None else [args.av_rate]
     pass_range = range(1, 6)
-    policies = get_all_subclasses(static_step_handle_functions.StaticStepHandleFunction) if args.policy is None\
+    policies = get_all_subclasses(static_step_handle_functions.StaticStepHandleFunction) if args.policy is None \
         else [getattr(static_step_handle_functions, args.policy)]
     simulation_args = []
+    closed = args.closed
     for demand in demands:
         demand_inst = demand()
         for seed in seeds:
@@ -57,12 +59,12 @@ def main(args):
                     if policy.is_av_rate_dependent:
                         for av_rate in av_rates:
                             for min_num_pass in pass_range:
-                                simulation_args.append((demand_inst, seed, av_rate, min_num_pass, policy))
+                                simulation_args.append((demand_inst, seed, av_rate, min_num_pass, policy, closed))
                     else:
                         for min_num_pass in pass_range:
-                            simulation_args.append((demand_inst, seed, 0, min_num_pass, policy))
+                            simulation_args.append((demand_inst, seed, 0, min_num_pass, policy, closed))
                 else:
-                    simulation_args.append((demand_inst, seed, 0, 0, policy))
+                    simulation_args.append((demand_inst, seed, 0, 0, policy, closed))
     with Pool(args.num_processes) as pool:
         list(tqdm(pool.imap(simulate, simulation_args), total=len(simulation_args)))
 

@@ -13,6 +13,7 @@ def get_args():
     parser.add_argument("-p", "--policy", type=str, default=None, help='Policy to run, None=all policies')
     parser.add_argument("-d", "--demand", type=str, default=None, help='Demand to run, None=all demands')
     parser.add_argument("-av", "--av_rate", type=float, default=None, help='AV rate to run, None=all av rates')
+    parser.add_argument("-c","--closed", type=bool, default=False, help='Closed PTL')
 
 
     args = parser.parse_args()
