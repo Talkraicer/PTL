@@ -1,6 +1,8 @@
 import os
 import pickle
 
+from matplotlib import pyplot as plt
+
 from results.parse_exp_results import ResultsParser
 import pandas as pd
 import numpy as np
@@ -129,11 +131,22 @@ def create_metric_results_table(results_parsers, metric,
 
 
 def create_speeds_plot(results_parsers,
-                       demands=None, av_rates=None, policies=None,
+                       one_demand=None, policies=None, one_av_rate=None,
                        ):
-    demands = list(set(map(lambda x: x.demand_name, results_parsers))) if not demands else demands
-    av_rates = sorted(list(set(map(lambda x: x.av_rate, results_parsers)))) if not av_rates else av_rates
+    demands = list(set(map(lambda x: x.demand_name, results_parsers))) if not one_demand else [one_demand]
+    av_rates = sorted(list(set(map(lambda x: x.av_rate, results_parsers)))) if not one_av_rate else [one_av_rate]
     policies = sorted(list(set(map(lambda x: x.policy_name, results_parsers)))) if not policies else policies
+
+    for demand in demands:
+        for av_rate in av_rates:
+            fig,av_rate_ax = plt.subplots()
+            for policy in policies:
+                task_parsers = list(filter(lambda x: x.av_rate == av_rate and
+                                                 x.demand_name == demand and
+                                                 x.policy_name == policy,
+                                           results_parsers))
+
+
 
 
 if __name__ == '__main__':
@@ -147,3 +160,5 @@ if __name__ == '__main__':
         res = create_metric_results_table(parsers, metric, vType=True)
         res.to_csv(os.path.join(output_path,f"{metric}_vType.csv"))
         res.to_pickle(os.path.join(output_path,f"{metric}_vType.pkl"))
+
+        create_speeds_plot(parsers, one_demand="Daily", one_policy="Plus_1", one_av_rate=0.1)

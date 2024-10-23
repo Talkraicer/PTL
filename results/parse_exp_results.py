@@ -109,7 +109,7 @@ class ResultsParser:
         if vType:
             tripinfo = self.tripinfo_df[self.tripinfo_df["vType"] == vType]
         if "pass" in metric:
-            return tripinfo[metric].mean()/ tripinfo["numPass"].sum()
+            return tripinfo[metric].sum() / tripinfo["numPass"].sum()
         return tripinfo[metric].mean()
 
 
