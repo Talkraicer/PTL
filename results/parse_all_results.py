@@ -82,7 +82,7 @@ def process_combination(args):
 
 # Function to parallelize
 
-def create_metric_results_table(results_parsers, metric,
+def create_metrics_results_tables(results_parsers, metrics,
                                 demands=None, av_rates=None, policies=None,
                                 vType=False):
     """
@@ -103,31 +103,36 @@ def create_metric_results_table(results_parsers, metric,
                           columns=pd.MultiIndex.from_product([demands, av_rates, vTypes, ["mean", "std"]]))
     else:
         df = pd.DataFrame(index=policies, columns=pd.MultiIndex.from_product([demands, av_rates, ["mean", "std"]]))
+    for metric in metrics:
+        tasks = []
+        df_metric = df.copy()
+        for demand in demands:
+            for policy in policies:
+                for av_rate in av_rates:
+                    task_parsers = list(filter(lambda x: x.av_rate == av_rate and
+                                                         x.demand_name == demand and
+                                                         x.policy_name == policy,
+                                               results_parsers))
+                    tasks.append((task_parsers, metric, vType, (policy, demand, av_rate)))
 
-    tasks = []
-    for demand in demands:
-        for policy in policies:
-            for av_rate in av_rates:
-                task_parsers = list(filter(lambda x: x.av_rate == av_rate and
-                                                     x.demand_name == demand and
-                                                     x.policy_name == policy,
-                                           results_parsers))
-                tasks.append((task_parsers, metric, vType, (policy, demand, av_rate)))
+        with Pool() as pool:
+            # Use imap instead of starmap for progress tracking
+            results = list(tqdm(pool.imap_unordered(process_combination, tasks), total=len(tasks)))
+        for result, key in results:
+            policy, demand, av_rate = key
+            if vType:  # If vType was used
+                for v in vTypes:
+                    df_metric.loc[policy, (demand, av_rate, v, "mean")] = result[v]["mean"]
+                    df_metric.loc[policy, (demand, av_rate, v, "std")] = result[v]["std"]
+            else:
+                df_metric.loc[policy, (demand, av_rate, "mean")] = result["mean"]
+                df_metric.loc[policy, (demand, av_rate, "std")] = result["std"]
 
-    with Pool() as pool:
-        # Use imap instead of starmap for progress tracking
-        results = list(tqdm(pool.imap_unordered(process_combination, tasks), total=len(tasks)))
-    for result, key in results:
-        policy, demand, av_rate = key
-        if vType:  # If vType was used
-            for v in vTypes:
-                df.loc[policy, (demand, av_rate, v, "mean")] = result[v]["mean"]
-                df.loc[policy, (demand, av_rate, v, "std")] = result[v]["std"]
-        else:
-            df.loc[policy, (demand, av_rate, "mean")] = result["mean"]
-            df.loc[policy, (demand, av_rate, "std")] = result["std"]
+        df_name = f"{metric}_vType" if vType else metric
+        df_metric.to_csv(f"results/output_results/{df_name}.csv")
+        df_metric.to_pickle(f"results/output_results/{df_name}.pkl")
 
-    return df
+
 
 
 def create_speeds_plot(results_parsers,
@@ -152,13 +157,7 @@ def create_speeds_plot(results_parsers,
 if __name__ == '__main__':
     parsers = get_all_results_parsers("SUMO/outputs", one_demand="Daily")
     output_path = "results/output_results"
-    for metric in ["passDelay", "totalDelay", "duration", "passDuration"]:
-        res = create_metric_results_table(parsers, metric)
-        res.to_csv(os.path.join(output_path,f"{metric}.csv"))
-        res.to_pickle(os.path.join(output_path,f"{metric}.pkl"))
+    metrics = ["passDelay", "totalDelay", "duration", "passDuration"]
+    create_metrics_results_tables(parsers, metrics, vType=True)
+    create_metrics_results_tables(parsers, metrics, vType=False)
 
-        res = create_metric_results_table(parsers, metric, vType=True)
-        res.to_csv(os.path.join(output_path,f"{metric}_vType.csv"))
-        res.to_pickle(os.path.join(output_path,f"{metric}_vType.pkl"))
-
-        create_speeds_plot(parsers, one_demand="Daily", one_policy="Plus_1", one_av_rate=0.1)
