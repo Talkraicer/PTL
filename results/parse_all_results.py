@@ -137,7 +137,7 @@ def create_speeds_plot(results_parsers,
 
 
 if __name__ == '__main__':
-    parsers = get_all_results_parsers("SUMO/outputs")
+    parsers = get_all_results_parsers("SUMO/outputs", one_demand="Daily")
     output_path = "results/output_results"
     for metric in ["passDelay", "totalDelay", "duration", "passDuration"]:
         res = create_metric_results_table(parsers, metric)
