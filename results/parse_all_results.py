@@ -29,8 +29,8 @@ def get_all_results_parsers(outputs_folder, one_demand=None, one_av_rate=None):
                                            os.listdir(seed_folder))))
                 for experiment in experiments:
                     exp_path = os.path.join(seed_folder, experiment)
-                    if exp_path + ".pkl" in os.listdir(seed_folder):
-                        results_parsers.append(pickle.load(open(exp_path + ".pkl", "rb")))
+                    if exp_path + "_ResultsParser.pkl" in os.listdir(seed_folder):
+                        results_parsers.append(pickle.load(open(exp_path + "_ResultsParser.pkl", "rb")))
                     else:
                         tasks.append(exp_path)  # Collecting paths to process
     # Use multiprocessing to parse experiments in parallel with tqdm

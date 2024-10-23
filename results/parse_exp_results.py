@@ -16,11 +16,8 @@ class ResultsParser:
         self.av_rate = float(parts[-3])
         self.demand_name = str(parts[-4])
 
-        if os.path.exists(exp_file+"_tripinfo.pkl"):
-            self.tripinfo_df = pd.read_pickle(exp_file+"_tripinfo.pkl")
-        else:
-            self.tripinfo_df = self._parse_tripinfo_output()
-            self.tripinfo_df.to_pickle(exp_file+"_tripinfo.pkl")
+        self.tripinfo_df = self._parse_tripinfo_output()
+
 
         self.PTL_lanes = ["E1_4", "E2_3", "E3_4", "E4_3", "E5_4", "E6_3"]
         self.occupancy_df, self.speed_df, self.density_df, self.num_vehs = {}, {}, {}, {}
@@ -30,7 +27,7 @@ class ResultsParser:
         self.lanes_metrics_map = {"speed": self.speed_df, "occupancy": self.occupancy_df,
                                   "num_vehs": self.num_vehs, "density": self.density_df}
 
-        pickle.dump(self, open(exp_file + ".pkl", "wb"))
+        pickle.dump(self, open(exp_file + "_ResultsParser.pkl", "wb"))
 
 
     def _parse_tripinfo_output(self):
