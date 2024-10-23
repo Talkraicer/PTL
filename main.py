@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore", message="API change now handles step as floati
 
 def simulate(args, logger=None):
     demand_inst, seed, av_rate, min_num_pass, policy, closed = args
-    sumo = SUMOAdapter(demand_inst, seed, av_rate, closed)
+    sumo = SUMOAdapter(demand_inst, seed, av_rate, closed=closed)
     policy = policy(sumo)
     if policy.is_num_pass_dependent:
         policy.set_num_pass(min_num_pass)
