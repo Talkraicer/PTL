@@ -1,4 +1,6 @@
 import argparse
+import os
+
 from Policies import static_step_handle_functions
 
 
@@ -13,8 +15,9 @@ def get_args():
     parser.add_argument("-p", "--policy", type=str, default=None, help='Policy to run, None=all policies')
     parser.add_argument("-d", "--demand", type=str, default=None, help='Demand to run, None=all demands')
     parser.add_argument("-av", "--av_rate", type=float, default=None, help='AV rate to run, None=all av rates')
-    parser.add_argument("-c","--closed", type=bool, default=False, help='Closed PTL')
+    parser.add_argument("--net_file" , type=str, default="network", help='Network file name (has to be in the SUMOconfig folder)')
 
 
     args = parser.parse_args()
+    assert os.path.exists(f"SUMO/SUMOconfig/{args.net_file}.net.xml"), f"Network file {args.net_file}.net.xml does not exist"
     return args

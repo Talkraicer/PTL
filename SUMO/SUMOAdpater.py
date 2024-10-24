@@ -9,25 +9,26 @@ class SUMOAdapter:
     def __init__(self, demand_profile: Demand, seed: int, av_rate: float,
                  route_temp: str = "route_template.rou.xml", net_file: str = "network.net.xml",
                  cfg_temp: str = "config_template.sumocfg", add_temp: str = "additional_template.add.xml",
-                 closed = False,
                  template_folder="SUMOconfig", output_folder="outputs", gui=False, lane_num=4, ramps_num=3):
         curdir = os.path.dirname(os.path.abspath(__file__))
-        self.closed = closed
         self.template_folder = os.path.join(curdir, template_folder)
-        self.output_folder = os.path.join(curdir, output_folder, demand_profile.__str__(), str(av_rate), str(seed))
-        self.output_folder = os.path.join(self.output_folder, "closed") if closed else self.output_folder
-        os.makedirs(self.output_folder, exist_ok=True)
+
         self.av_rate = av_rate
         self.seed = seed
         self.lane_num = lane_num
         self.ramps_num = ramps_num
-        net_file = "network_closed.net.xml" if closed else net_file
         self.network_file = os.path.join(self.template_folder, net_file)
         self.route_template = os.path.join(self.template_folder, route_temp)
         self.config_template = os.path.join(self.template_folder, cfg_temp)
         self.additional_template = os.path.join(self.template_folder, add_temp)
         self.gui = gui
         self.demand_profile = demand_profile
+        net_name = net_file.split(".")[0]
+
+        self.config_folder = os.path.join(self.template_folder, net_name)
+        os.makedirs(self.config_folder, exist_ok=True)
+        self.output_folder = os.path.join(curdir, net_name, output_folder, demand_profile.__str__(), str(av_rate), str(seed))
+        os.makedirs(self.output_folder, exist_ok=True)
 
     def allow_vehicles(self, edge: str = "all", veh_types=None, min_num_pass=0):
         if veh_types is None:
@@ -76,13 +77,11 @@ class SUMOAdapter:
 
     def init_simulation(self, policy):
         self.policy_name = policy.__str__()
-        config_folder = os.path.join(self.template_folder, self.demand_profile.__str__(), str(self.seed),
+        exp_config_folder = os.path.join(self.config_folder, self.demand_profile.__str__(), str(self.seed),
                                      self.policy_name)
-        config_folder = os.path.join(config_folder, "closed") if self.closed else config_folder
-        os.makedirs(config_folder, exist_ok=True)
-        self.route_file = os.path.join(config_folder, f"av_{self.av_rate}.rou.xml")
-        self.config_file = os.path.join(config_folder, f"av_{self.av_rate}.sumocfg")
-        self.additional_file = os.path.join(config_folder, f"av_{self.av_rate}.add.xml")
+        self.route_file = os.path.join(exp_config_folder, f"av_{self.av_rate}.rou.xml")
+        self.config_file = os.path.join(exp_config_folder, f"av_{self.av_rate}.sumocfg")
+        self.additional_file = os.path.join(exp_config_folder, f"av_{self.av_rate}.add.xml")
 
         self._create_route_file(policy.veh_kinds, policy.min_num_pass, policy.endToEnd)
         self._create_additional_file()
@@ -146,7 +145,7 @@ class SUMOAdapter:
                     vTypeDist.append(elem)
 
     def _append_flow(self, root, hour, in_j, out_j, prob,
-                     depart_speed="max", type_dist="vehicleDist", depart_lane=None):
+                     depart_speed="desired", type_dist="vehicleDist", depart_lane=None):
         flow_id = f'flow_{type_dist}_{hour}_{in_j}_{out_j}' if depart_lane is None else f'flow_{type_dist}_{hour}_{in_j}_{out_j}_{depart_lane}'
         flow = ET.Element('flow', id=flow_id, type=type_dist,
                           begin=str((hour - 6) * self.demand_profile.hour_len),

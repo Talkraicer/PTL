@@ -15,8 +15,7 @@ warnings.filterwarnings("ignore", message="API change now handles step as floati
 
 
 def simulate(args, logger=None):
-    demand_inst, seed, av_rate, min_num_pass, policy, closed = args
-    sumo = SUMOAdapter(demand_inst, seed, av_rate, closed=closed)
+    sumo, min_num_pass, policy = args
     policy = policy(sumo)
     if policy.is_num_pass_dependent:
         policy.set_num_pass(min_num_pass)
@@ -50,7 +49,7 @@ def main(args):
     policies = get_all_subclasses(static_step_handle_functions.StaticStepHandleFunction) if args.policy is None \
         else [getattr(static_step_handle_functions, args.policy)]
     simulation_args = []
-    closed = args.closed
+    net_file = args.net_file + ".net.xml"
     for demand in demands:
         demand_inst = demand()
         for seed in seeds:
@@ -59,12 +58,15 @@ def main(args):
                     if policy.is_av_rate_dependent:
                         for av_rate in av_rates:
                             for min_num_pass in pass_range:
-                                simulation_args.append((demand_inst, seed, av_rate, min_num_pass, policy, closed))
+                                sumo = SUMOAdapter(demand_inst, seed, av_rate, net_file=net_file)
+                                simulation_args.append((sumo, min_num_pass, policy))
                     else:
                         for min_num_pass in pass_range:
-                            simulation_args.append((demand_inst, seed, 0, min_num_pass, policy, closed))
+                            sumo = SUMOAdapter(demand_inst, seed, 0, net_file=net_file)
+                            simulation_args.append((sumo, min_num_pass, policy))
                 else:
-                    simulation_args.append((demand_inst, seed, 0, 0, policy, closed))
+                    sumo = SUMOAdapter(demand_inst, seed, 0, net_file=net_file)
+                    simulation_args.append((sumo, 0, policy))
     with Pool(args.num_processes) as pool:
         list(tqdm(pool.imap(simulate, simulation_args), total=len(simulation_args)))
 
