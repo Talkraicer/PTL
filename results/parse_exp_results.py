@@ -4,8 +4,11 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 from results.results_utils import split_all_parts
 import warnings
+
 warnings.filterwarnings("ignore")
 import pickle
+
+
 class ResultsParser:
     def __init__(self, exp_file, period=60):
         self.tripinfo_file = exp_file + "_tripinfo.xml"
@@ -18,7 +21,6 @@ class ResultsParser:
 
         self.tripinfo_df = self._parse_tripinfo_output()
 
-
         self.PTL_lanes = ["E1_4", "E2_3", "E3_4", "E4_3", "E5_4", "E6_3"]
         self.occupancy_df, self.speed_df, self.density_df, self.num_vehs = {}, {}, {}, {}
         self.period = period
@@ -28,7 +30,6 @@ class ResultsParser:
                                   "num_vehs": self.num_vehs, "density": self.density_df}
 
         pickle.dump(self, open(exp_file + "_ResultsParser.pkl", "wb"))
-
 
     def _parse_tripinfo_output(self):
         """
@@ -98,20 +99,31 @@ class ResultsParser:
     def _validate_tripinfo_metric(self, metric):
         assert metric in self.tripinfo_df.columns, f"Metric {metric} is not in the sumo output file"
 
-    def mean_metric(self, metric, vType=None):
+    def mean_metric(self, metric, vType=None, baseline=None):
         """
         Calculate the mean of a metric for all vehicles in the simulation
         :param metric: the metric to calculate the mean for
+        :param vType: the vehicle type to calculate the mean for
+        :param baseline: another ResultsParser object to compare the metric to
         :return: a float representing the mean of the metric
         """
         self._validate_tripinfo_metric(metric)
+        assert not (vType and baseline), "Cannot compare vehicle type and baseline"
         tripinfo = self.tripinfo_df
+        baseline_tripinfo = baseline.tripinfo_df if baseline else None
         if vType:
             tripinfo = self.tripinfo_df[self.tripinfo_df["vType"] == vType]
+            metric_data = tripinfo[metric]
+        elif baseline:
+            # make sure ids are the same"
+            joined_baseline = pd.merge(tripinfo, baseline_tripinfo, on="id", suffixes=("_new", "_baseline"))
+            assert len(joined_baseline) == len(tripinfo), "Baseline and new tripinfo files have different ids"
+            metric_data = joined_baseline[metric + "_new"] - joined_baseline[metric + "_baseline"]
+        else:
+            metric_data = tripinfo[metric]
         if "pass" in metric:
-            return tripinfo[metric].sum() / tripinfo["numPass"].sum()
-        return tripinfo[metric].mean()
-
+            return metric_data.sum() / tripinfo["numPass"].sum()
+        return metric_data.mean()
 
     def num_vehs_PTL(self):
         """
@@ -133,9 +145,9 @@ class ResultsParser:
         :return: a dictionary with the PTL lanes as keys and the mean speed of vehicles in each lane as values
         """
         # multiply speed by number of vehicles in each lane
-        weighted_speed = self.speed_df[self.PTL_lanes].astype(float)*self.num_vehs[self.PTL_lanes]
-        avg_speed = weighted_speed.apply(sum,axis=1) / self.num_vehs[self.PTL_lanes].apply(sum,axis=1)
-        return avg_speed.fillna(0)
+        weighted_speed = self.speed_df[self.PTL_lanes].astype(float) * self.num_vehs[self.PTL_lanes]
+        avg_speed = weighted_speed.apply(sum, axis=1) / self.num_vehs[self.PTL_lanes].apply(sum, axis=1)
+        return avg_speed.fillna(0).values
 
     def mean_speed_all_lanes(self):
         """
@@ -143,9 +155,10 @@ class ResultsParser:
         :return: a dictionary with the lanes as keys and the mean speed of vehicles in each lane as values
         """
         # multiply speed by number of vehicles in each lane
-        weighted_speed = self.speed_df.astype(float)*self.num_vehs
-        avg_speed = weighted_speed.apply(sum,axis=1) / self.num_vehs.apply(sum,axis=1)
-        return avg_speed.fillna(0)
+        weighted_speed = self.speed_df.astype(float) * self.num_vehs
+        avg_speed = weighted_speed.apply(sum, axis=1) / self.num_vehs.apply(sum, axis=1)
+        return avg_speed.fillna(0).values
+
 
 if __name__ == '__main__':
     tripinfo_file = "../SUMO/outputs/Test/0/0/Nothing_tripinfo.xml"

@@ -54,21 +54,26 @@ def calc_mean_std(df):
         'std': stds}).T
 
 
-def calc_metric_over_simulations(results_parsers, metric, vType=None):
+def calc_metric_over_simulations(results_parsers, metric, vType=None, baselines = None):
     """
     Calculate the mean and std of a metric for all the results parsers
     :param results_parsers: a list of ResultsParser objects
     :param metric: the metric to calculate the mean and std for
     :param vType: weather to calculate the metric for each vehicle type
     :param PTL: weather to calculate the metric for PTL and not PTL separately
+    :param baseline: the baselines to compare the metric to (list of ResultsParser objects)
     :return: a dataframe with the mean and std of the metric for all the results parsers
     """
-    means = [rp.mean_metric(metric, vType) for rp in results_parsers]
+    if baselines:
+        means = [rp.mean_metric(metric, vType, baseline) for rp in results_parsers for baseline in baselines
+                    if rp.seed == baseline.seed]
+    else:
+        means = [rp.mean_metric(metric, vType) for rp in results_parsers]
     return {"mean": np.mean(means), "std": np.std(means)}
 
 
 def process_combination(args):
-    results_parsers, metric, vType, key = args
+    results_parsers, metric, vType, baselines, key = args
     if vType:
         vTypes = ["AV", "HD", "Bus"]
         result = {}
@@ -77,7 +82,7 @@ def process_combination(args):
             result[v] = {"mean": vtype_results["mean"], "std": vtype_results["std"]}
         return result, key
     else:
-        av_rate_results = calc_metric_over_simulations(results_parsers, metric)
+        av_rate_results = calc_metric_over_simulations(results_parsers, metric, baselines=baselines)
         return {"mean": av_rate_results["mean"], "std": av_rate_results["std"]}, key
 
 
@@ -85,7 +90,7 @@ def process_combination(args):
 
 def create_metrics_results_tables(results_parsers, metrics,
                                 demands=None, av_rates=None, policies=None,
-                                vType=False):
+                                vType=False, baseline=False):
     """
     Create a table with the mean and std of a metric for all the results parsers
     :param results_parsers: a list of ResultsParser objects
@@ -97,7 +102,7 @@ def create_metrics_results_tables(results_parsers, metrics,
     demands = list(set(map(lambda x: x.demand_name, results_parsers))) if not demands else demands
     av_rates = sorted(list(set(map(lambda x: x.av_rate, results_parsers)))) if not av_rates else av_rates
     policies = sorted(list(set(map(lambda x: x.policy_name, results_parsers)))) if not policies else policies
-
+    baselines = list(filter(lambda x: x.policy_name == "Nothing", results_parsers)) if baseline else None
     if vType:
         vTypes = ["AV", "HD", "Bus"]
         df = pd.DataFrame(index=policies,
@@ -114,7 +119,7 @@ def create_metrics_results_tables(results_parsers, metrics,
                                                          x.demand_name == demand and
                                                          x.policy_name == policy,
                                                results_parsers))
-                    tasks.append((task_parsers, metric, vType, (policy, demand, av_rate)))
+                    tasks.append((task_parsers, metric, vType, baselines, (policy, demand, av_rate)))
 
         with Pool() as pool:
             # Use imap instead of starmap for progress tracking
@@ -129,14 +134,14 @@ def create_metrics_results_tables(results_parsers, metrics,
                 df_metric.loc[policy, (demand, av_rate, "mean")] = result["mean"]
                 df_metric.loc[policy, (demand, av_rate, "std")] = result["std"]
 
-        df_name = f"{metric}_vType" if vType else metric
+        df_name = f"{metric}_vType" if vType else f"{metric}_baseline" if baseline else f"{metric}"
         df_metric.to_csv(f"results/output_results/{df_name}.csv")
         df_metric.to_pickle(f"results/output_results/{df_name}.pkl")
 
 
 
 
-def create_speeds_plot(results_parsers,
+def create_speeds_plot(results_parsers, PTL=False,
                        one_demand=None, policies=None, one_av_rate=None,
                        ):
     demands = list(set(map(lambda x: x.demand_name, results_parsers))) if not one_demand else [one_demand]
@@ -151,14 +156,31 @@ def create_speeds_plot(results_parsers,
                                                  x.demand_name == demand and
                                                  x.policy_name == policy,
                                            results_parsers))
-
+                if len(task_parsers) == 0:
+                    continue
+                y_values = [rp.mean_speed_PTL() if PTL else rp.mean_speed_all_lanes() for rp in task_parsers]
+                # cut all y_values to the same length
+                min_len = min(map(len, y_values))
+                y_values = [y[:min_len] for y in y_values]
+                mean_y_values = np.mean(y_values, axis=0)
+                std_y_values = np.std(y_values, axis=0)
+                av_rate_ax.errorbar(range(len(mean_y_values)), mean_y_values, yerr=std_y_values, label=policy)
+            av_rate_ax.set_title(f"Speeds for {demand} demand and {av_rate} AV rate")
+            av_rate_ax.set_xlabel("Time")
+            av_rate_ax.set_ylabel("Speed")
+            av_rate_ax.legend()
+            output_filename = f"Speeds_{demand}_{av_rate}" + ("_PTL" if PTL else "") + ".png"
+            plt.savefig(f"results/output_results/{output_filename}")
 
 
 
 if __name__ == '__main__':
-    parsers = get_all_results_parsers("SUMO/outputs", one_demand="Daily")
+    parsers = get_all_results_parsers("SUMO/outputs/network_new", one_demand="Daily")
     output_path = "results/output_results"
     metrics = ["passDelay", "totalDelay", "duration", "passDuration"]
     create_metrics_results_tables(parsers, metrics, vType=True)
     create_metrics_results_tables(parsers, metrics, vType=False)
+    create_metrics_results_tables(parsers, metrics, baseline=True)
+    create_speeds_plot(parsers, PTL=True, one_demand="Test")
+    create_speeds_plot(parsers, PTL=False, one_demand="Test")
 
