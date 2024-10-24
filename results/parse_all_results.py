@@ -135,8 +135,8 @@ def create_metrics_results_tables(results_parsers, metrics, result_folder,
                 df_metric.loc[policy, (demand, av_rate, "std")] = result["std"]
 
         df_name = f"{metric}_vType" if vType else f"{metric}_baseline" if baseline else f"{metric}"
-        df_metric.to_csv(f"results/output_results/{df_name}.csv")
-        df_metric.to_pickle(f"results/output_results/{df_name}.pkl")
+        df_metric.to_csv(os.path.join(result_folder, f"{df_name}.csv"))
+        df_metric.to_pickle(os.path.join(result_folder, f"{df_name}.pkl"))
 
 
 def create_speeds_plot(results_parsers, result_folder,
@@ -169,11 +169,12 @@ def create_speeds_plot(results_parsers, result_folder,
             av_rate_ax.set_ylabel("Speed")
             av_rate_ax.legend()
             output_filename = f"Speeds_{demand}_{av_rate}" + ("_PTL" if PTL else "") + ".png"
-            plt.savefig(f"/{output_filename}")
+            plt.savefig(os.path.join(result_folder, output_filename))
 
 
 def parse_all_results(output_folder="SUMO/outputs/network_new", one_demand=None, one_av_rate=None):
     result_folder = os.path.join("results", "output_results", output_folder.split("/")[-1])
+    os.makedirs(result_folder, exist_ok=True)
     results_parsers = get_all_results_parsers(output_folder, one_demand=one_demand, one_av_rate=one_av_rate)
     metrics = ["passDelay", "totalDelay", "duration", "passDuration"]
     create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True)
