@@ -7,8 +7,7 @@ import SUMO.demand_profiles as demand_profiles
 import Policies.static_step_handle_functions as static_step_handle_functions
 from utils.argparse_utils import get_args
 from utils.class_utils import get_all_subclasses
-from Loggers.CSVLogger import CSVLogger
-
+from results.parse_all_results import parse_all_results
 import warnings
 
 warnings.filterwarnings("ignore", message="API change now handles step as floating point seconds")
@@ -74,6 +73,7 @@ def main(args):
     with Pool(args.num_processes) as pool:
         list(tqdm(pool.imap(simulate, simulation_args), total=len(simulation_args)))
 
+    parse_all_results(output_folder=f"SUMO/outputs/{args.net_file}", one_demand=demand_inst.__str__())
 
 if __name__ == '__main__':
     main(get_args())

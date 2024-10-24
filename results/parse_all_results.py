@@ -54,7 +54,7 @@ def calc_mean_std(df):
         'std': stds}).T
 
 
-def calc_metric_over_simulations(results_parsers, metric, vType=None, baselines = None):
+def calc_metric_over_simulations(results_parsers, metric, vType=None, baselines=None):
     """
     Calculate the mean and std of a metric for all the results parsers
     :param results_parsers: a list of ResultsParser objects
@@ -66,7 +66,7 @@ def calc_metric_over_simulations(results_parsers, metric, vType=None, baselines 
     """
     if baselines:
         means = [rp.mean_metric(metric, vType, baseline) for rp in results_parsers for baseline in baselines
-                    if rp.seed == baseline.seed]
+                 if rp.seed == baseline.seed]
     else:
         means = [rp.mean_metric(metric, vType) for rp in results_parsers]
     return {"mean": np.mean(means), "std": np.std(means)}
@@ -88,9 +88,9 @@ def process_combination(args):
 
 # Function to parallelize
 
-def create_metrics_results_tables(results_parsers, metrics,
-                                demands=None, av_rates=None, policies=None,
-                                vType=False, baseline=False):
+def create_metrics_results_tables(results_parsers, metrics, result_folder,
+                                  demands=None, av_rates=None, policies=None,
+                                  vType=False, baseline=False):
     """
     Create a table with the mean and std of a metric for all the results parsers
     :param results_parsers: a list of ResultsParser objects
@@ -139,9 +139,8 @@ def create_metrics_results_tables(results_parsers, metrics,
         df_metric.to_pickle(f"results/output_results/{df_name}.pkl")
 
 
-
-
-def create_speeds_plot(results_parsers, PTL=False,
+def create_speeds_plot(results_parsers, result_folder,
+                       PTL=False,
                        one_demand=None, policies=None, one_av_rate=None,
                        ):
     demands = list(set(map(lambda x: x.demand_name, results_parsers))) if not one_demand else [one_demand]
@@ -150,11 +149,11 @@ def create_speeds_plot(results_parsers, PTL=False,
 
     for demand in demands:
         for av_rate in av_rates:
-            fig,av_rate_ax = plt.subplots()
+            fig, av_rate_ax = plt.subplots()
             for policy in policies:
                 task_parsers = list(filter(lambda x: x.av_rate == av_rate and
-                                                 x.demand_name == demand and
-                                                 x.policy_name == policy,
+                                                     x.demand_name == demand and
+                                                     x.policy_name == policy,
                                            results_parsers))
                 if len(task_parsers) == 0:
                     continue
@@ -170,17 +169,19 @@ def create_speeds_plot(results_parsers, PTL=False,
             av_rate_ax.set_ylabel("Speed")
             av_rate_ax.legend()
             output_filename = f"Speeds_{demand}_{av_rate}" + ("_PTL" if PTL else "") + ".png"
-            plt.savefig(f"results/output_results/{output_filename}")
+            plt.savefig(f"/{output_filename}")
 
+
+def parse_all_results(output_folder="SUMO/outputs/network_new", one_demand=None, one_av_rate=None):
+    result_folder = os.path.join("results", "output_results", output_folder.split("/")[-1])
+    results_parsers = get_all_results_parsers(output_folder, one_demand=one_demand, one_av_rate=one_av_rate)
+    metrics = ["passDelay", "totalDelay", "duration", "passDuration"]
+    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True)
+    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False)
+    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, baseline=True)
+    create_speeds_plot(results_parsers, PTL=True, result_folder=result_folder, one_demand=one_demand)
+    create_speeds_plot(results_parsers, PTL=False, result_folder=result_folder, one_demand=one_demand)
 
 
 if __name__ == '__main__':
     parsers = get_all_results_parsers("SUMO/outputs/network_new", one_demand="Daily")
-    output_path = "results/output_results"
-    metrics = ["passDelay", "totalDelay", "duration", "passDuration"]
-    create_metrics_results_tables(parsers, metrics, vType=True)
-    create_metrics_results_tables(parsers, metrics, vType=False)
-    create_metrics_results_tables(parsers, metrics, baseline=True)
-    create_speeds_plot(parsers, PTL=True, one_demand="Test")
-    create_speeds_plot(parsers, PTL=False, one_demand="Test")
-

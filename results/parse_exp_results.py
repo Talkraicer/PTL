@@ -53,7 +53,8 @@ class ResultsParser:
         df["duration"] = df["duration"].astype(float)
         df["passDelay"] = df["totalDelay"] * df["numPass"]
         df["passDuration"] = df["duration"] * df["numPass"]
-        return df[["id", "vType", "numPass", "duration", "totalDelay", "passDelay", "passDuration"]]
+        df["timeLoss"] = df["timeLoss"].astype(float)
+        return df[["id", "vType", "numPass", "duration", "totalDelay", "passDelay", "passDuration", "timeLoss"]]
 
     def _append_all_dataframes(self, key, value):
         if key not in self.speed_df:
@@ -110,11 +111,11 @@ class ResultsParser:
         self._validate_tripinfo_metric(metric)
         assert not (vType and baseline), "Cannot compare vehicle type and baseline"
         tripinfo = self.tripinfo_df
-        baseline_tripinfo = baseline.tripinfo_df if baseline else None
         if vType:
             tripinfo = self.tripinfo_df[self.tripinfo_df["vType"] == vType]
             metric_data = tripinfo[metric]
         elif baseline:
+            baseline_tripinfo = baseline.tripinfo_df
             # make sure ids are the same"
             joined_baseline = pd.merge(tripinfo, baseline_tripinfo, on="id", suffixes=("_new", "_baseline"))
             assert len(joined_baseline) == len(tripinfo), "Baseline and new tripinfo files have different ids"
