@@ -161,7 +161,7 @@ class SUMOAdapter:
         tree = ET.parse(self.route_template)
         root = tree.getroot()
 
-        self._create_vType_dist(root, veh_kinds, min_num_pass)
+        self._create_vType_dist(root, veh_kinds, min_num_pass, endToEnd)
 
         in_junc = "J0"
         out_junc = "J9"

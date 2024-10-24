@@ -3,4 +3,4 @@ def get_all_subclasses(cls):
     subclasses = cls.__subclasses__()
     for subclass in subclasses:
         subclasses += get_all_subclasses(subclass)
-    return subclasses
+    return list(set(subclasses))

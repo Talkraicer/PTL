@@ -31,13 +31,14 @@ def get_all_results_parsers(outputs_folder, one_demand=None, one_av_rate=None):
                                            os.listdir(seed_folder))))
                 for experiment in experiments:
                     exp_path = os.path.join(seed_folder, experiment)
-                    if exp_path + "_ResultsParser.pkl" in os.listdir(seed_folder):
+                    if os.path.exists(exp_path + "_ResultsParser.pkl"):
                         results_parsers.append(pickle.load(open(exp_path + "_ResultsParser.pkl", "rb")))
                     else:
                         tasks.append(exp_path)  # Collecting paths to process
-    # Use multiprocessing to parse experiments in parallel with tqdm
-    with Pool() as pool:
-        results_parsers += list(tqdm(pool.imap(parse_experiment, tasks), total=len(tasks)))
+    if len(tasks) > 1:
+        # Use multiprocessing to parse experiments in parallel with tqdm
+        with Pool() as pool:
+            results_parsers += list(tqdm(pool.imap(parse_experiment, tasks), total=len(tasks)))
 
     return results_parsers
 
