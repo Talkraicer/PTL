@@ -27,7 +27,7 @@ class SUMOAdapter:
 
         self.config_folder = os.path.join(self.template_folder, net_name)
         os.makedirs(self.config_folder, exist_ok=True)
-        self.output_folder = os.path.join(curdir, net_name, output_folder, demand_profile.__str__(), str(av_rate), str(seed))
+        self.output_folder = os.path.join(curdir, output_folder, net_name, demand_profile.__str__(), str(av_rate), str(seed))
         os.makedirs(self.output_folder, exist_ok=True)
 
     def allow_vehicles(self, edge: str = "all", veh_types=None, min_num_pass=0):
@@ -79,6 +79,7 @@ class SUMOAdapter:
         self.policy_name = policy.__str__()
         exp_config_folder = os.path.join(self.config_folder, self.demand_profile.__str__(), str(self.seed),
                                      self.policy_name)
+        os.makedirs(exp_config_folder, exist_ok=True)
         self.route_file = os.path.join(exp_config_folder, f"av_{self.av_rate}.rou.xml")
         self.config_file = os.path.join(exp_config_folder, f"av_{self.av_rate}.sumocfg")
         self.additional_file = os.path.join(exp_config_folder, f"av_{self.av_rate}.add.xml")
@@ -162,7 +163,7 @@ class SUMOAdapter:
 
         self._create_vType_dist(root, veh_kinds, min_num_pass, endToEnd)
 
-        in_junc = "J0"
+        in_junc = "J1" if self.network_file.endswith("new.net.xml") else "J0"
         out_junc = "J9"
         in_ramps = [f'i{i}' for i in range(1, self.ramps_num + 1)]
         out_ramps = [f'o{i}' for i in range(1, self.ramps_num + 1)]
