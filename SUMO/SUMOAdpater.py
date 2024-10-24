@@ -21,7 +21,6 @@ class SUMOAdapter:
         # Parsing the net file:
         self.lane_num = self._get_first_edge_lanenum()
         self.ramps_num = self._get_num_ramps()
-
         self.route_template = os.path.join(self.template_folder, route_temp)
         self.config_template = os.path.join(self.template_folder, cfg_temp)
         self.additional_template = os.path.join(self.template_folder, add_temp)
@@ -38,29 +37,29 @@ class SUMOAdapter:
     def _get_first_junction(self):
         # retrive using sumolib the leftmost junction
         net = sumolib.net.readNet(self.network_file)
-        junctions = net.getJunctions()
-        junctions = sorted(junctions, key=lambda x: x.getShape().x)
+        junctions = net.getNodes()
+        junctions = sorted(junctions, key=lambda x: x.getShape()[0][0])
         return junctions[0].getID()
 
     def _get_last_junction(self):
         # retrive using sumolib the rightmost junction
         net = sumolib.net.readNet(self.network_file)
-        junctions = net.getJunctions()
-        junctions = sorted(junctions, key=lambda x: x.getShape().x)
+        junctions = net.getNodes()
+        junctions = sorted(junctions, key=lambda x: x.getShape()[0][0])
         return junctions[-1].getID()
 
     def _get_first_edge_lanenum(self):
         # retrive using sumolib the leftmost edge and return its number of lanes
         net = sumolib.net.readNet(self.network_file)
         edges = net.getEdges()
-        edges = sorted(edges, key=lambda x: x.getShape().x)
+        edges = sorted(edges, key=lambda x: x.getShape()[0][0])
         return edges[0].getLaneNumber()
 
     def _get_num_ramps(self):
         # retrive using sumolib the number of ramps - ramps are junctions starting with 'i'
         net = sumolib.net.readNet(self.network_file)
-        junctions = net.getJunctions()
-        return len([j for j in junctions if j.getID().startswith('i')])
+        edges = net.getEdges()
+        return len([e for e in edges if e.getID().startswith('Ei')])
 
     def allow_vehicles(self, edge: str = "all", veh_types=None, min_num_pass=0):
         if veh_types is None:
@@ -308,6 +307,4 @@ class SUMOAdapter:
 
 
 if __name__ == '__main__':
-    adapter_daily = SUMOAdapter(DailyDemand(), 42, 0.5, gui=True)
-    adapter_daily.init_simulation("test.xml")
-    adapter_daily.run_for_timesteps(65000)
+    adapter_daily = SUMOAdapter(DailyDemand(), 42, 0.5, net_file="network_new2.net.xml")
