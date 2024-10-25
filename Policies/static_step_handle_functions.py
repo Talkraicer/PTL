@@ -1,6 +1,6 @@
 import traci
 from SUMO.SUMOAdpater import SUMOAdapter
-
+from SUMO.netfile_utils import get_PTL_lanes
 class StaticStepHandleFunction:
     is_num_pass_dependent = False
     is_av_rate_dependent = False
@@ -16,6 +16,10 @@ class StaticStepHandleFunction:
     def handle_step(self, state_dict):
         pass
 
+    def after_init_sumo(self):
+        # run this function after sumo is initialized
+        pass
+
     def __str__(self):
         pass
 
@@ -24,11 +28,11 @@ class Nothing(StaticStepHandleFunction):
     def __init__(self, env: SUMOAdapter):
         super().__init__(env)
 
-    def handle_step(self, state_dict):
-        if state_dict["t"] < 2:
-            PTL_lane_ids = self.env.get_PTL_lane_ids()
-            for lane in PTL_lane_ids:
-                traci.lane.setAllowed(lane, "bus")
+
+    def after_init_sumo(self):
+        PTL_lane_ids = get_PTL_lanes(self.env.network_file)
+        for lane in PTL_lane_ids:
+            traci.lane.setAllowed(lane, "bus")
 
     def __str__(self):
         return "Nothing"

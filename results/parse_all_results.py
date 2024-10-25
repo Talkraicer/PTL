@@ -191,4 +191,4 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", one_demand=None,
 
 
 if __name__ == '__main__':
-    parse_all_results("../SUMO/outputs/network_new2", one_demand="Daily2")
+    parse_all_results("SUMO/outputs/network_crowded", one_demand="Daily2")

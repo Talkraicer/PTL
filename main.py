@@ -19,6 +19,7 @@ def simulate(args, logger=None):
     if policy.is_num_pass_dependent:
         policy.set_num_pass(min_num_pass)
     sumo.init_simulation(policy)  # initialize simulation
+    policy.after_init_sumo()
 
     # initialize logger:
     if logger:
