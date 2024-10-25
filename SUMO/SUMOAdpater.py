@@ -176,13 +176,13 @@ class SUMOAdapter:
                     elem.tail = '\n\t\t'
                     vTypeDist.append(elem)
 
-    def _append_flow(self, root, hour, in_j, out_j, prob,
-                     depart_speed="desired", type_dist="vehicleDist", depart_lane=None):
+    def _append_flow(self, root, hour, in_j, out_j, prob, type_dist="vehicleDist", depart_lane=None):
+
         flow_id = f'flow_{type_dist}_{hour}_{in_j}_{out_j}' if depart_lane is None else f'flow_{type_dist}_{hour}_{in_j}_{out_j}_{depart_lane}'
         flow = ET.Element('flow', id=flow_id, type=type_dist,
                           begin=str((hour - 6) * self.demand_profile.hour_len),
                           fromJunction=in_j, toJunction=out_j, end=str((hour - 5) * self.demand_profile.hour_len),
-                          probability=f"{prob}", departSpeed=depart_speed)
+                          probability=f"{prob}", departSpeed=self.demand_profile.enter_speed)
         if depart_lane is not None:
             flow.set('departLane', str(depart_lane))
         flow.tail = '\n\t'

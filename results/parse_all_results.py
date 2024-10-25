@@ -185,4 +185,4 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", one_demand=None,
 
 
 if __name__ == '__main__':
-    parsers = get_all_results_parsers("SUMO/outputs/network_new", one_demand="Daily")
+    parse_all_results("../SUMO/outputs/network_new2", one_demand="Daily2")

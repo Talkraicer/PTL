@@ -15,8 +15,8 @@ def get_args():
     parser.add_argument("-p", "--policy", type=str, default=None, help='Policy to run, None=all policies')
     parser.add_argument("-d", "--demand", type=str, default="Daily2Demand", help='Demand to run, None=all demands')
     parser.add_argument("-av", "--av_rate", type=float, default=None, help='AV rate to run, None=all av rates')
-    parser.add_argument("--net_file" , type=str, default="network_new2", help='Network file name (has to be in the SUMOconfig folder)')
-
+    parser.add_argument("--net_file" , type=str, default="network_crowded", help='Network file name (has to be in the SUMOconfig folder)')
+    parser.add_argument("--parse_results", type=bool, default=True, help='Parse results')
 
     args = parser.parse_args()
     assert os.path.exists(f"SUMO/SUMOconfig/{args.net_file}.net.xml"), f"Network file {args.net_file}.net.xml does not exist"

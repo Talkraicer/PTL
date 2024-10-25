@@ -68,8 +68,8 @@ def main(args):
                     simulation_args.append((sumo, 0, policy))
     with Pool(args.num_processes) as pool:
         list(tqdm(pool.imap(simulate, simulation_args), total=len(simulation_args)))
-
-    parse_all_results(output_folder=f"SUMO/outputs/{args.net_file}", one_demand=demand_inst.__str__())
+    if args.parse_results:
+        parse_all_results(output_folder=f"SUMO/outputs/{args.net_file}", one_demand=demand_inst.__str__())
 
 if __name__ == '__main__':
     main(get_args())

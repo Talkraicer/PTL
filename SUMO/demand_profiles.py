@@ -17,6 +17,7 @@ class Demand:
         self.bus_amount = None
         self.veh_amount = None
         self.hour_len = None
+        self.enter_speed = "max"
 
     def get_vehicle_amount(self):
         return self.veh_amount

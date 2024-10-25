@@ -10,7 +10,7 @@ import pickle
 
 
 class ResultsParser:
-    def __init__(self, exp_file, period=60):
+    def __init__(self, exp_file, PTL_lanes, period=60):
         self.tripinfo_file = exp_file + "_tripinfo.xml"
         self.lanes_file = exp_file + "_lanes.xml"
         parts = split_all_parts(exp_file)
@@ -19,9 +19,9 @@ class ResultsParser:
         self.av_rate = float(parts[-3])
         self.demand_name = str(parts[-4])
 
+        self.PTL_lanes = PTL_lanes
         self.tripinfo_df = self._parse_tripinfo_output()
 
-        self.PTL_lanes = ["E1_4", "E2_3", "E3_4", "E4_3", "E5_4", "E6_3"]
         self.occupancy_df, self.speed_df, self.density_df, self.num_vehs = {}, {}, {}, {}
         self.period = period
         self._parse_lanes_output()
