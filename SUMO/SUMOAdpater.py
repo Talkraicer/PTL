@@ -56,8 +56,7 @@ class SUMOAdapter:
 
 
     def get_state_dict(self, t):
-        state_dict = {}
-        state_dict["t"] = t
+        state_dict = {"t": t}
         PTL_lane_ids = get_PTL_lanes(self.network_file)
         state_dict["veh_ids_in_PTL"] = [veh_id for lane in PTL_lane_ids for veh_id in
                                         traci.lane.getLastStepVehicleIDs(lane)]
