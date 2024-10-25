@@ -3,8 +3,7 @@ import numpy as np
 import os
 from xml.etree import ElementTree as ET
 from SUMO.demand_profiles import *
-import sumolib
-
+from SUMO.netfile_utils import *
 
 class SUMOAdapter:
     def __init__(self, demand_profile: Demand, seed: int, av_rate: float,
@@ -19,8 +18,8 @@ class SUMOAdapter:
 
         self.network_file = os.path.join(self.template_folder, net_file)
         # Parsing the net file:
-        self.lane_num = self._get_first_edge_lanenum()
-        self.ramps_num = self._get_num_ramps()
+        self.lane_num = get_first_edge_lanenum(self.network_file)
+        self.ramps_num = get_num_ramps(self.network_file)
         self.route_template = os.path.join(self.template_folder, route_temp)
         self.config_template = os.path.join(self.template_folder, cfg_temp)
         self.additional_template = os.path.join(self.template_folder, add_temp)
@@ -33,33 +32,9 @@ class SUMOAdapter:
         self.output_folder = os.path.join(curdir, output_folder, net_name, demand_profile.__str__(), str(av_rate), str(seed))
         os.makedirs(self.output_folder, exist_ok=True)
 
+        # put a copy of the network file in the output folder
+        os.system(f"cp {self.network_file} {os.path.join(curdir, output_folder, net_name)}")
 
-    def _get_first_junction(self):
-        # retrive using sumolib the leftmost junction
-        net = sumolib.net.readNet(self.network_file)
-        junctions = net.getNodes()
-        junctions = sorted(junctions, key=lambda x: x.getShape()[0][0])
-        return junctions[0].getID()
-
-    def _get_last_junction(self):
-        # retrive using sumolib the rightmost junction
-        net = sumolib.net.readNet(self.network_file)
-        junctions = net.getNodes()
-        junctions = sorted(junctions, key=lambda x: x.getShape()[0][0])
-        return junctions[-1].getID()
-
-    def _get_first_edge_lanenum(self):
-        # retrive using sumolib the leftmost edge and return its number of lanes
-        net = sumolib.net.readNet(self.network_file)
-        edges = net.getEdges()
-        edges = sorted(edges, key=lambda x: x.getShape()[0][0])
-        return edges[0].getLaneNumber()
-
-    def _get_num_ramps(self):
-        # retrive using sumolib the number of ramps - ramps are junctions starting with 'i'
-        net = sumolib.net.readNet(self.network_file)
-        edges = net.getEdges()
-        return len([e for e in edges if e.getID().startswith('Ei')])
 
     def allow_vehicles(self, edge: str = "all", veh_types=None, min_num_pass=0):
         if veh_types is None:
@@ -77,13 +52,13 @@ class SUMOAdapter:
             if num_pass >= min_num_pass:
                 traci.vehicle.setVehicleClass(veh_id, "private")
 
-    def get_PTL_lane_ids(self):
-        return ["E1_4", "E2_3", "E3_4", "E4_3", "E5_4", "E6_3"]
+
+
 
     def get_state_dict(self, t):
         state_dict = {}
         state_dict["t"] = t
-        PTL_lane_ids = self.get_PTL_lane_ids()
+        PTL_lane_ids = get_PTL_lanes(self.network_file)
         state_dict["veh_ids_in_PTL"] = [veh_id for lane in PTL_lane_ids for veh_id in
                                         traci.lane.getLastStepVehicleIDs(lane)]
         state_dict["num_vehs_in_PTL"] = len(state_dict["veh_ids_in_PTL"])
@@ -194,8 +169,8 @@ class SUMOAdapter:
 
         self._create_vType_dist(root, veh_kinds, min_num_pass, endToEnd)
 
-        in_junc = self._get_first_junction()
-        out_junc = self._get_last_junction()
+        in_junc = get_first_junction(self.network_file)
+        out_junc = get_last_junction(self.network_file)
         in_ramps = [f'i{i}' for i in range(1, self.ramps_num + 1)]
         out_ramps = [f'o{i}' for i in range(1, self.ramps_num + 1)]
 

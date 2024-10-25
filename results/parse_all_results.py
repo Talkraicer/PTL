@@ -8,15 +8,21 @@ import pandas as pd
 import numpy as np
 from multiprocessing import Pool
 from tqdm import tqdm
+from SUMO.netfile_utils import get_PTL_lanes
 
-
-def parse_experiment(exp_path):
+def parse_experiment(args):
+    exp_path, PTL_lanes = args
     """Helper function to parse a single experiment path."""
-    return ResultsParser(exp_path)
+    return ResultsParser(exp_path,PTL_lanes=PTL_lanes)
 
 
 def get_all_results_parsers(outputs_folder, one_demand=None, one_av_rate=None):
     demands = os.listdir(outputs_folder) if not one_demand else [one_demand]
+
+    net_file = [f for f in os.listdir(outputs_folder) if f.endswith(".net.xml")][0]
+    net_file = os.path.join(outputs_folder, net_file)
+    PTL_lanes = get_PTL_lanes(net_file)
+    demands = [demand for demand in demands if os.path.isdir(os.path.join(outputs_folder, demand))]
 
     tasks = []  # List to hold all tasks to be processed in parallel
     results_parsers = []
@@ -34,7 +40,7 @@ def get_all_results_parsers(outputs_folder, one_demand=None, one_av_rate=None):
                     if os.path.exists(exp_path + "_ResultsParser.pkl"):
                         results_parsers.append(pickle.load(open(exp_path + "_ResultsParser.pkl", "rb")))
                     else:
-                        tasks.append(exp_path)  # Collecting paths to process
+                        tasks.append((exp_path,PTL_lanes))  # Collecting paths to process
     if len(tasks) > 1:
         # Use multiprocessing to parse experiments in parallel with tqdm
         with Pool() as pool:
