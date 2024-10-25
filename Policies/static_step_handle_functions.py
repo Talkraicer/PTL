@@ -50,26 +50,26 @@ class Plus(StaticStepHandleFunction):
     def __str__(self):
         assert self.min_num_pass is not None, "min_num_pass is not set"
         return f"Plus_{self.min_num_pass}"
-
-
-class StaticNumPass(Plus):
-    is_av_rate_dependent = True
-
-    def __init__(self, env: SUMOAdapter):
-        super().__init__(env)
-        assert env.av_rate != 0, "av_rate is not set"
-        self.veh_kinds = ["AV"]
-
-    def __str__(self):
-        assert self.min_num_pass is not None, "min_num_pass is not set"
-        return f"StaticNumPass_{self.min_num_pass}"
-
-
-class StaticNumPassFL(StaticNumPass):
-    def __init__(self, env: SUMOAdapter):
-        super().__init__(env)
-        self.endToEnd = True
-
-    def __str__(self):
-        assert self.min_num_pass is not None, "min_num_pass is not set"
-        return f"StaticNumPassFL_{self.min_num_pass}"
+#
+#
+# class StaticNumPass(Plus):
+#     is_av_rate_dependent = True
+#
+#     def __init__(self, env: SUMOAdapter):
+#         super().__init__(env)
+#         assert env.av_rate != 0, "av_rate is not set"
+#         self.veh_kinds = ["AV"]
+#
+#     def __str__(self):
+#         assert self.min_num_pass is not None, "min_num_pass is not set"
+#         return f"StaticNumPass_{self.min_num_pass}"
+#
+#
+# class StaticNumPassFL(StaticNumPass):
+#     def __init__(self, env: SUMOAdapter):
+#         super().__init__(env)
+#         self.endToEnd = True
+#
+#     def __str__(self):
+#         assert self.min_num_pass is not None, "min_num_pass is not set"
+#         return f"StaticNumPassFL_{self.min_num_pass}"
