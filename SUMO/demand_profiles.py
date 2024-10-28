@@ -89,62 +89,98 @@ class Demand:
 #     def __str__(self):
 #         return "Daily2"
 
-class DemandToy1000(Demand):
+# class DemandToy1000(Demand):
+#     def __init__(self):
+#         super().__init__()
+#         self.veh_amount = {6: 1000}
+#         self.bus_amount = {6: 10}
+#
+#         self.hour_len = 3600
+#         self.toy = True
+#
+#     def __str__(self):
+#         return "Toy1000"
+#
+# class DemandToy2000(Demand):
+#     def __init__(self):
+#         super().__init__()
+#         self.veh_amount = {6: 2000}
+#         self.bus_amount = {6: 20}
+#
+#         self.hour_len = 3600
+#         self.toy = True
+#
+#     def __str__(self):
+#         return "Toy2000"
+#
+# class DemandToy3000(Demand):
+#     def __init__(self):
+#         super().__init__()
+#         self.veh_amount = {6: 3000}
+#         self.bus_amount = {6: 30}
+#
+#         self.hour_len = 3600
+#         self.toy = True
+#
+#     def __str__(self):
+#         return "Toy3000"
+#
+# class DemandToy4000(Demand):
+#     def __init__(self):
+#         super().__init__()
+#         self.veh_amount = {6: 4000}
+#         self.bus_amount = {6: 40}
+#
+#         self.hour_len = 3600
+#         self.toy = True
+#
+#     def __str__(self):
+#         return "Toy4000"
+#
+# class DemandToy5000(Demand):
+#     def __init__(self):
+#         super().__init__()
+#         self.veh_amount = {6: 5000}
+#         self.bus_amount = {6: 50}
+#
+#         self.hour_len = 3600
+#         self.toy = True
+#
+#     def __str__(self):
+#         return "Toy5000"
+#
+class DemandToy6000(Demand):
     def __init__(self):
         super().__init__()
-        self.veh_amount = {6: 1000}
-        self.bus_amount = {6: 10}
+        self.veh_amount = {6: 6000}
+        self.bus_amount = {6: 60}
 
         self.hour_len = 3600
         self.toy = True
 
     def __str__(self):
-        return "Toy1000"
+        return "Toy6000"
 
-class DemandToy2000(Demand):
+class DemandToy7000(Demand):
     def __init__(self):
         super().__init__()
-        self.veh_amount = {6: 2000}
-        self.bus_amount = {6: 20}
+        self.veh_amount = {6: 7000}
+        self.bus_amount = {6: 70}
 
         self.hour_len = 3600
         self.toy = True
 
     def __str__(self):
-        return "Toy2000"
+        return "Toy7000"
 
-class DemandToy3000(Demand):
+class DemandToy8000(Demand):
     def __init__(self):
         super().__init__()
-        self.veh_amount = {6: 3000}
-        self.bus_amount = {6: 30}
+        self.veh_amount = {6: 8000}
+        self.bus_amount = {6: 80}
 
         self.hour_len = 3600
         self.toy = True
 
     def __str__(self):
-        return "Toy3000"
-
-class DemandToy4000(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 4000}
-        self.bus_amount = {6: 40}
-
-        self.hour_len = 3600
-        self.toy = True
-
-    def __str__(self):
-        return "Toy4000"
-
-class DemandToy5000(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 5000}
-        self.bus_amount = {6: 50}
-
-        self.hour_len = 3600
-        self.toy = True
-
-    def __str__(self):
-        return "Toy5000"
+        return "Toy8000"
