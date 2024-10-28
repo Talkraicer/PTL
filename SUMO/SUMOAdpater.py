@@ -159,10 +159,11 @@ class SUMOAdapter:
         flow = ET.Element('flow', id=flow_id, type=type_dist,
                           begin=str((hour - 6) * self.demand_profile.hour_len),
                           fromJunction=in_j, toJunction=out_j, end=str((hour - 5) * self.demand_profile.hour_len),
-                          probability=f"{prob}", departSpeed=self.demand_profile.enter_speed)
+                          departSpeed=self.demand_profile.enter_speed)
         if poisson:
-            flow.remove(flow.find('probability'))
             flow.set("period", f"exp({prob})")
+        else:
+            flow.set('probability', str(prob))
         if depart_lane is not None:
             flow.set('departLane', str(depart_lane))
         flow.tail = '\n\t'
