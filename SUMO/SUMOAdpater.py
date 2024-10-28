@@ -4,7 +4,7 @@ import os
 from xml.etree import ElementTree as ET
 from SUMO.demand_profiles import *
 from SUMO.netfile_utils import *
-
+import shutil
 class SUMOAdapter:
     def __init__(self, demand_profile: Demand, seed: int, av_rate: float,
                  route_temp: str = "route_template.rou.xml", net_file: str = "network.net.xml",
@@ -33,7 +33,7 @@ class SUMOAdapter:
         os.makedirs(self.output_folder, exist_ok=True)
 
         # put a copy of the network file in the output folder
-        os.system(f"cp {self.network_file} {os.path.join(curdir, output_folder, net_name)}")
+        shutil.copyfile(self.network_file, os.path.join(curdir, output_folder, net_name, net_file))
 
 
     def allow_vehicles(self, edge: str = "all", veh_types=None, min_num_pass=0):
@@ -89,7 +89,10 @@ class SUMOAdapter:
         self.config_file = os.path.join(exp_config_folder, f"av_{self.av_rate}.sumocfg")
         self.additional_file = os.path.join(exp_config_folder, f"av_{self.av_rate}.add.xml")
 
-        self._create_route_file(policy.veh_kinds, policy.min_num_pass, policy.endToEnd)
+        if self.demand_profile.toy:
+            self._create_toy_rou_file(policy.min_num_pass, policy.veh_kinds)
+        else:
+            self._create_route_file(policy.veh_kinds, policy.min_num_pass, policy.endToEnd)
         self._create_additional_file()
         self._create_config_file()
         self._init_sumo()
@@ -231,6 +234,101 @@ class SUMOAdapter:
         tree.write(self.route_file)
         # tree.write(f'{ROOT}/rou_files_{EXP_NAME}/{demand}/{seed}/{EXP_NAME}.rou.xml')
 
+    def _create_toy_vType_dist(self, root, ptl_dist, non_ptl_dist):
+        # Set vTypeDistribution to contain the probabilities of each vehicle type and the number of passengers
+        for vTypeDist in root.findall('vTypeDistribution'):
+            vTypeDist.text += '\t'
+            if vTypeDist.attrib['id'].startswith('PTLDist'):
+                if sum(ptl_dist.values()) == 0:
+                    root.remove(vTypeDist)
+                    continue
+                for veh_type, prob in ptl_dist.items():
+                    if prob == 0:
+                        continue
+                    veh_class = "private"
+                    elem = ET.Element('vType', id=veh_type, color='blue', probability=str(prob), vClass=veh_class)
+                    elem.tail = '\n\t\t'
+                    vTypeDist.append(elem)
+            elif vTypeDist.attrib['id'].startswith('NOPTLDist'):
+                if sum(non_ptl_dist.values()) == 0:
+                    root.remove(vTypeDist)
+                    continue
+                for veh_type, prob in non_ptl_dist.items():
+                    if prob == 0:
+                        continue
+                    veh_class = "passenger"
+                    elem = ET.Element('vType', id=veh_type, color='red', probability=str(prob), vClass=veh_class)
+                    elem.tail = '\n\t\t'
+                    vTypeDist.append(elem)
+
+            elif vTypeDist.attrib['id'] == 'busDist':
+                for k, v in self.demand_profile.prob_pass_bus.items():
+                    if v == 0:
+                        continue
+                    elem = ET.Element('vType', id=f'Bus_{k}', probability=str(v), vClass='bus')
+                    elem.tail = '\n\t\t'
+                    vTypeDist.append(elem)
+
+    def _create_toy_rou_file(self, min_num_pass=None, veh_kinds = None):
+        self.route_template = self.route_template.replace("route_template", "toy_route_template")
+        tree = ET.parse(self.route_template)
+        root = tree.getroot()
+
+        # get the ptl and non-ptl lanes
+        in_lanes = get_first_edge_lanes(self.network_file)
+        in_ptl_lane_indices = [l.getIndex() for l in in_lanes if is_PTL_Lane(l)]
+        not_ptl_lanes_indices = [l.getIndex() for l in in_lanes if not is_PTL_Lane(l)]
+
+        if min_num_pass is None:
+            min_num_pass = 6
+
+        # handle the vehicle distribution
+        hdv_prop = 1 - self.av_rate
+        total_dist = {
+            f"HD_{k}": v*hdv_prop for k, v in self.demand_profile.prob_pass_hd.items()
+        }
+        total_dist.update({
+            f"AV_{k}": v*self.av_rate for k, v in self.demand_profile.prob_pass_av.items()
+        })
+
+        ptl_dist = {k: v for k, v in total_dist.items()
+                    if int(k.split("_")[1]) >= min_num_pass
+                    and k.split("_")[0] in veh_kinds}
+        ptl_prop = sum(ptl_dist.values())
+        non_ptl_dist = {k: v for k, v in total_dist.items()
+                        if k not in ptl_dist}
+        non_ptl_prop = sum(non_ptl_dist.values())
+
+        ptl_dist = normalize_dict(ptl_dist)
+        non_ptl_dist = normalize_dict(non_ptl_dist)
+
+        self._create_toy_vType_dist(root, ptl_dist, non_ptl_dist)
+
+        in_junc = get_first_junction(self.network_file)
+        out_junc = get_last_junction(self.network_file)
+
+        for hour, hour_demand in self.demand_profile.veh_amount.items():
+            if hour_demand == 0:
+                continue
+            total_arrival_prob = hour_demand / 3600
+            bus_veh_prop = self.demand_profile.bus_amount[hour] / hour_demand
+
+            for lane in in_ptl_lane_indices:
+                flow_prob = total_arrival_prob * ptl_prop / len(in_ptl_lane_indices)
+                if flow_prob > 0:
+                    self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
+                                      type_dist="PTLDist")
+                if total_arrival_prob * bus_veh_prop > 0:
+                    self._append_flow(root, hour, in_junc, out_junc, total_arrival_prob * bus_veh_prop/ len(in_ptl_lane_indices),
+                                      depart_lane=lane, type_dist="busDist")
+            if total_arrival_prob * non_ptl_prop > 0:
+                for lane in not_ptl_lanes_indices:
+                    flow_prob = total_arrival_prob * non_ptl_prop / len(not_ptl_lanes_indices)
+                    self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
+                                      type_dist="NOPTLDist")
+        # Save the changes back to the file
+        tree.write(self.route_file)
+
     def _create_config_file(self):
         # Load and parse the XML file
         tree = ET.parse(self.config_template)
@@ -281,4 +379,4 @@ class SUMOAdapter:
 
 
 if __name__ == '__main__':
-    adapter_daily = SUMOAdapter(DailyDemand(), 42, 0.5, net_file="network_new2.net.xml")
+    adapter_daily = SUMOAdapter(DemandToy1000(), 42, 0, net_file="network_toy.net.xml")

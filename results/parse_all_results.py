@@ -179,7 +179,11 @@ def create_speeds_plot(results_parsers, result_folder,
 
 
 def parse_all_results(output_folder="SUMO/outputs/network_new", one_demand=None, one_av_rate=None):
-    result_folder = os.path.join("results", "output_results", output_folder.split("/")[-1])
+    if not one_demand:
+        demands = os.listdir(output_folder)
+        result_folder = os.path.join("results", "output_results", str(demands))
+    else:
+        result_folder = os.path.join("results", "output_results", output_folder.split("/")[-1], one_demand)
     os.makedirs(result_folder, exist_ok=True)
     results_parsers = get_all_results_parsers(output_folder, one_demand=one_demand, one_av_rate=one_av_rate)
     metrics = ["passDelay", "totalDelay", "duration", "passDuration"]
@@ -191,4 +195,4 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", one_demand=None,
 
 
 if __name__ == '__main__':
-    parse_all_results("SUMO/outputs/network_crowded", one_demand="Daily2")
+    parse_all_results("../SUMO/outputs/network_toy")

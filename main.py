@@ -58,19 +58,23 @@ def main(args):
                     if policy.is_av_rate_dependent:
                         for av_rate in av_rates:
                             for min_num_pass in pass_range:
-                                sumo = SUMOAdapter(demand_inst, seed, av_rate, net_file=net_file)
+                                sumo = SUMOAdapter(demand_inst, seed, av_rate, net_file=net_file,
+                                                   gui=args.gui)
                                 simulation_args.append((sumo, min_num_pass, policy))
                     else:
                         for min_num_pass in pass_range:
-                            sumo = SUMOAdapter(demand_inst, seed, 0,net_file=net_file)
+                            sumo = SUMOAdapter(demand_inst, seed, 0,net_file=net_file,
+                                               gui=args.gui)
                             simulation_args.append((sumo, min_num_pass, policy))
                 else:
-                    sumo = SUMOAdapter(demand_inst, seed, 0,net_file=net_file)
+                    sumo = SUMOAdapter(demand_inst, seed, 0,net_file=net_file,
+                                       gui=args.gui)
                     simulation_args.append((sumo, 0, policy))
-    with Pool(args.num_processes) as pool:
+    num_processes = args.num_processes if not args.gui else 1
+    with Pool(num_processes) as pool:
         list(tqdm(pool.imap(simulate, simulation_args), total=len(simulation_args)))
     if args.parse_results:
-        parse_all_results(output_folder=f"SUMO/outputs/{args.net_file}", one_demand=demand_inst.__str__())
+        parse_all_results(output_folder=f"SUMO/outputs/{args.net_file}", one_demand=args.demand)
 
 if __name__ == '__main__':
     main(get_args())
