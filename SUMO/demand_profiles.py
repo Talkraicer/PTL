@@ -63,42 +63,42 @@ class ScenariosDemand(Demand):
         return "Scenarios"
 
 
-class DailyDemand(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 6163, 7: 6450, 8: 7053, 9: 6443, 10: 6287, 11: 5800, 12: 6266, 13: 5428,
-                           14: 5661, 15: 4644, 16: 4937, 17: 5668, 18: 5184, 19: 5126}
-        self.bus_amount = {6: 62, 7: 37, 8: 19, 9: 31, 10: 26, 11: 25, 12: 17, 13: 31,
-                           14: 44, 15: 30, 16: 24, 17: 28, 18: 25, 19: 16}
-
-        self.hour_len = 3600
-
-    def __str__(self):
-        return "Daily"
-
-class Daily2Demand(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 6686, 7: 6881, 8: 7387, 9: 6895, 10: 6870, 11: 6414, 12: 6897, 13: 5980,
-                           14: 6098, 15: 4906, 16: 5203, 17: 5921, 18: 5435, 19: 5354}
-        self.bus_amount = {6: 62, 7: 37, 8: 19, 9: 31, 10: 26, 11: 25, 12: 17, 13: 31,
-                           14: 44, 15: 30, 16: 24, 17: 28, 18: 25, 19: 16}
-
-        self.hour_len = 3600
-
-    def __str__(self):
-        return "Daily2"
-
-class DemandExtreme(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 10000}
-        self.bus_amount = {6: 100}
-
-        self.hour_len = 3600
-
-    def __str__(self):
-        return "Extreme"
+# # class DailyDemand(Demand):
+# #     def __init__(self):
+# #         super().__init__()
+# #         self.veh_amount = {6: 6163, 7: 6450, 8: 7053, 9: 6443, 10: 6287, 11: 5800, 12: 6266, 13: 5428,
+# #                            14: 5661, 15: 4644, 16: 4937, 17: 5668, 18: 5184, 19: 5126}
+# #         self.bus_amount = {6: 62, 7: 37, 8: 19, 9: 31, 10: 26, 11: 25, 12: 17, 13: 31,
+# #                            14: 44, 15: 30, 16: 24, 17: 28, 18: 25, 19: 16}
+# #
+# #         self.hour_len = 3600
+# #
+# #     def __str__(self):
+# #         return "Daily"
+# #
+# # class Daily2Demand(Demand):
+# #     def __init__(self):
+# #         super().__init__()
+# #         self.veh_amount = {6: 6686, 7: 6881, 8: 7387, 9: 6895, 10: 6870, 11: 6414, 12: 6897, 13: 5980,
+# #                            14: 6098, 15: 4906, 16: 5203, 17: 5921, 18: 5435, 19: 5354}
+# #         self.bus_amount = {6: 62, 7: 37, 8: 19, 9: 31, 10: 26, 11: 25, 12: 17, 13: 31,
+# #                            14: 44, 15: 30, 16: 24, 17: 28, 18: 25, 19: 16}
+# #
+# #         self.hour_len = 3600
+# #
+# #     def __str__(self):
+# #         return "Daily2"
+# #
+# # class DemandExtreme(Demand):
+# #     def __init__(self):
+# #         super().__init__()
+# #         self.veh_amount = {6: 10000}
+# #         self.bus_amount = {6: 100}
+# #
+# #         self.hour_len = 3600
+#
+#     def __str__(self):
+#         return "Extreme"
 
 class DemandToy1000(Demand):
     def __init__(self):
