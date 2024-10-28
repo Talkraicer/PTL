@@ -210,4 +210,4 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", one_demand=None,
 
 
 if __name__ == '__main__':
-    parse_all_results("SUMO/outputs/network_toy")
+    parse_all_results("SUMO/outputs/network_extreme")
