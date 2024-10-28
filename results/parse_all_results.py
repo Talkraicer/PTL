@@ -105,7 +105,7 @@ def create_metrics_results_tables(results_parsers, metrics, result_folder,
     :return: a dataframe of columns demand, subcolumns of av_rates, (optional) subcolumns of vTypes,
                 subcolumns mean and std, and rows of policies
     """
-    demands = list(set(map(lambda x: x.demand_name, results_parsers))) if not demands else demands
+    demands = sorted(list(set(map(lambda x: x.demand_name, results_parsers))) if not demands else demands)
     av_rates = sorted(list(set(map(lambda x: x.av_rate, results_parsers)))) if not av_rates else av_rates
     policies = sorted(list(set(map(lambda x: x.policy_name, results_parsers)))) if not policies else policies
     baselines = list(filter(lambda x: x.policy_name == "Nothing", results_parsers)) if baseline else None
