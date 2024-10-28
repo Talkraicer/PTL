@@ -97,7 +97,6 @@ def highlight_min(s):
     is_min = s == s.min()
     if "mean" in s.name:
         return ['background-color: yellow' if v else '' for v in is_min]
-    print(s.name)
     return ['' for _ in is_min]
 
 def create_metrics_results_tables(results_parsers, metrics, result_folder,
@@ -157,6 +156,7 @@ def create_metrics_results_tables(results_parsers, metrics, result_folder,
 def create_speeds_plot(results_parsers, result_folder,
                        PTL=False,
                        one_demand=None, policies=None, one_av_rate=None,
+                       errorbars=True
                        ):
     demands = list(set(map(lambda x: x.demand_name, results_parsers))) if not one_demand else [one_demand]
     av_rates = sorted(list(set(map(lambda x: x.av_rate, results_parsers)))) if not one_av_rate else [one_av_rate]
@@ -178,7 +178,10 @@ def create_speeds_plot(results_parsers, result_folder,
                 y_values = [y[:min_len] for y in y_values]
                 mean_y_values = np.mean(y_values, axis=0)
                 std_y_values = np.std(y_values, axis=0)
-                av_rate_ax.errorbar(range(len(mean_y_values)), mean_y_values, yerr=std_y_values, label=policy)
+                if errorbars:
+                    av_rate_ax.errorbar(range(len(mean_y_values)), mean_y_values, yerr=std_y_values, label=policy)
+                else:
+                    av_rate_ax.plot(range(len(mean_y_values)), mean_y_values, label=policy)
             av_rate_ax.set_title(f"Speeds for {demand} demand and {av_rate} AV rate")
             av_rate_ax.set_xlabel("Time")
             av_rate_ax.set_ylabel("Speed")
@@ -198,10 +201,10 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", one_demand=None,
     os.makedirs(result_folder, exist_ok=True)
     results_parsers = get_all_results_parsers(output_folder, one_demand=one_demand, one_av_rate=one_av_rate)
     metrics = ["passDelay", "totalDelay", "duration", "passDuration"]
-    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True)
     create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False)
-    create_speeds_plot(results_parsers, PTL=True, result_folder=result_folder, one_demand=one_demand)
-    create_speeds_plot(results_parsers, PTL=False, result_folder=result_folder, one_demand=one_demand)
+    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True)
+    create_speeds_plot(results_parsers, PTL=True, result_folder=result_folder, one_demand=one_demand, errorbars=False)
+    create_speeds_plot(results_parsers, PTL=False, result_folder=result_folder, one_demand=one_demand, errorbars=False)
     if "toy" not in output_folder:
         create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, baseline=True,)
 
