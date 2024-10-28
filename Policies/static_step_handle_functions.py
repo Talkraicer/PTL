@@ -12,6 +12,7 @@ class StaticStepHandleFunction:
         self.veh_kinds = None
         self.min_num_pass = None
         self.endToEnd = False
+        self.arrival_split = False
 
     def handle_step(self, state_dict):
         pass
@@ -75,3 +76,30 @@ class StaticNumPass(Plus):
 #     def __str__(self):
 #         assert self.min_num_pass is not None, "min_num_pass is not set"
 #         return f"StaticNumPassFL_{self.min_num_pass}"
+
+
+class NothingSplit(Nothing):
+    def __init__(self, env: SUMOAdapter):
+        super().__init__(env)
+        self.arrival_split = True
+
+    def __str__(self):
+        return "NothingSplit"
+
+class PlusSplit(Plus):
+    def __init__(self, env: SUMOAdapter):
+        super().__init__(env)
+        self.arrival_split = True
+
+    def __str__(self):
+        assert self.min_num_pass is not None, "min_num_pass is not set"
+        return f"PlusSplit_{self.min_num_pass}"
+
+class StaticNumPassSplit(StaticNumPass):
+    def __init__(self, env: SUMOAdapter):
+        super().__init__(env)
+        self.arrival_split = True
+
+    def __str__(self):
+        assert self.min_num_pass is not None, "min_num_pass is not set"
+        return f"StaticNumPassSplit_{self.min_num_pass}"

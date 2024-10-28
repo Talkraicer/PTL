@@ -90,7 +90,7 @@ class SUMOAdapter:
         self.additional_file = os.path.join(exp_config_folder, f"av_{self.av_rate}.add.xml")
 
         if self.demand_profile.toy:
-            self._create_toy_rou_file(policy.min_num_pass, policy.veh_kinds)
+            self._create_toy_rou_file(policy.min_num_pass, policy.veh_kinds, policy.arrival_split)
         else:
             self._create_route_file(policy.veh_kinds, policy.min_num_pass, policy.endToEnd)
         self._create_additional_file()
@@ -273,7 +273,7 @@ class SUMOAdapter:
                     elem.tail = '\n\t\t'
                     vTypeDist.append(elem)
 
-    def _create_toy_rou_file(self, min_num_pass=None, veh_kinds = None):
+    def _create_toy_rou_file(self, min_num_pass=None, veh_kinds = None, arrival_split=False):
         self.route_template = self.route_template.replace("route_template", "toy_route_template")
         tree = ET.parse(self.route_template)
         root = tree.getroot()
@@ -317,14 +317,25 @@ class SUMOAdapter:
             total_arrival_prob = hour_demand / 3600
             bus_veh_prop = self.demand_profile.bus_amount[hour] / hour_demand
 
-            for lane in in_ptl_lane_indices:
-                flow_prob = total_arrival_prob * ptl_prop / len(in_ptl_lane_indices)
-                if flow_prob > 0:
-                    self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
-                                      type_dist="PTLDist", poisson=True)
-                if total_arrival_prob * bus_veh_prop > 0:
-                    self._append_flow(root, hour, in_junc, out_junc, total_arrival_prob * bus_veh_prop/ len(in_ptl_lane_indices),
-                                      depart_lane=lane, type_dist="busDist")
+            if arrival_split:
+                for lane in in_lanes:
+                    flow_prob = total_arrival_prob * ptl_prop / len(in_lanes)
+                    if flow_prob > 0:
+                        self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
+                                          type_dist="PTLDist", poisson=True)
+                    if total_arrival_prob * bus_veh_prop > 0:
+                        self._append_flow(root, hour, in_junc, out_junc,
+                                          total_arrival_prob * bus_veh_prop / len(in_lanes),
+                                          depart_lane=lane, type_dist="busDist")
+            else:
+                for lane in in_ptl_lane_indices:
+                    flow_prob = total_arrival_prob * ptl_prop / len(in_ptl_lane_indices)
+                    if flow_prob > 0:
+                        self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
+                                          type_dist="PTLDist", poisson=True)
+                    if total_arrival_prob * bus_veh_prop > 0:
+                        self._append_flow(root, hour, in_junc, out_junc, total_arrival_prob * bus_veh_prop/ len(in_ptl_lane_indices),
+                                          depart_lane=lane, type_dist="busDist")
             if total_arrival_prob * non_ptl_prop > 0:
                 for lane in not_ptl_lanes_indices:
                     flow_prob = total_arrival_prob * non_ptl_prop / len(not_ptl_lanes_indices)
