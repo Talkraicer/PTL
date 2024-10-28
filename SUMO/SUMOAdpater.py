@@ -280,6 +280,7 @@ class SUMOAdapter:
 
         # get the ptl and non-ptl lanes
         in_lanes = get_first_edge_lanes(self.network_file)
+        in_lanes_indices = [l.getIndex() for l in in_lanes]
         in_ptl_lane_indices = [l.getIndex() for l in in_lanes if is_PTL_Lane(l)]
         not_ptl_lanes_indices = [l.getIndex() for l in in_lanes if not is_PTL_Lane(l)]
 
@@ -318,7 +319,7 @@ class SUMOAdapter:
             bus_veh_prop = self.demand_profile.bus_amount[hour] / hour_demand
 
             if arrival_split:
-                for lane in in_lanes:
+                for lane in in_lanes_indices:
                     flow_prob = total_arrival_prob * ptl_prop / len(in_lanes)
                     if flow_prob > 0:
                         self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
