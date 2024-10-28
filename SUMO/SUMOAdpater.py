@@ -153,13 +153,16 @@ class SUMOAdapter:
                     elem.tail = '\n\t\t'
                     vTypeDist.append(elem)
 
-    def _append_flow(self, root, hour, in_j, out_j, prob, type_dist="vehicleDist", depart_lane=None):
+    def _append_flow(self, root, hour, in_j, out_j, prob, type_dist="vehicleDist", depart_lane=None, poisson = False):
 
         flow_id = f'flow_{type_dist}_{hour}_{in_j}_{out_j}' if depart_lane is None else f'flow_{type_dist}_{hour}_{in_j}_{out_j}_{depart_lane}'
         flow = ET.Element('flow', id=flow_id, type=type_dist,
                           begin=str((hour - 6) * self.demand_profile.hour_len),
                           fromJunction=in_j, toJunction=out_j, end=str((hour - 5) * self.demand_profile.hour_len),
                           probability=f"{prob}", departSpeed=self.demand_profile.enter_speed)
+        if poisson:
+            flow.remove(flow.find('probability'))
+            flow.set("period", f"exp({prob})")
         if depart_lane is not None:
             flow.set('departLane', str(depart_lane))
         flow.tail = '\n\t'
@@ -317,7 +320,7 @@ class SUMOAdapter:
                 flow_prob = total_arrival_prob * ptl_prop / len(in_ptl_lane_indices)
                 if flow_prob > 0:
                     self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
-                                      type_dist="PTLDist")
+                                      type_dist="PTLDist", poisson=True)
                 if total_arrival_prob * bus_veh_prop > 0:
                     self._append_flow(root, hour, in_junc, out_junc, total_arrival_prob * bus_veh_prop/ len(in_ptl_lane_indices),
                                       depart_lane=lane, type_dist="busDist")
@@ -325,7 +328,7 @@ class SUMOAdapter:
                 for lane in not_ptl_lanes_indices:
                     flow_prob = total_arrival_prob * non_ptl_prop / len(not_ptl_lanes_indices)
                     self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
-                                      type_dist="NOPTLDist")
+                                      type_dist="NOPTLDist", poisson=True)
         # Save the changes back to the file
         tree.write(self.route_file)
 
