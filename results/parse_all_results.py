@@ -95,7 +95,10 @@ def process_combination(args):
 def highlight_min(s):
     # return style of background color for the minimum value in the column if the column is "mean"
     is_min = s == s.min()
-    return ['background-color: yellow' if v else '' for v in is_min]
+    if "mean" in s.name:
+        return ['background-color: yellow' if v else '' for v in is_min]
+    print(s.name)
+    return ['' for _ in is_min]
 
 def create_metrics_results_tables(results_parsers, metrics, result_folder,
                                   demands=None, av_rates=None, policies=None,
@@ -148,9 +151,8 @@ def create_metrics_results_tables(results_parsers, metrics, result_folder,
         df_metric.to_pickle(os.path.join(result_folder, f"{df_name}.pkl"))
 
         # Create a table where the min value in the mean column is highlighted
-        df_metric.style.apply(highlight_min,
-                                subset=pd.IndexSlice[:, :, :, "mean"]).to_excel(
-                os.path.join(result_folder, f"{df_name}.xlsx"))
+        df_metric.style.apply(highlight_min)\
+                .to_excel(os.path.join(result_folder, f"{df_name}.xlsx"))
 
 def create_speeds_plot(results_parsers, result_folder,
                        PTL=False,
