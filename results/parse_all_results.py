@@ -179,10 +179,10 @@ def create_speeds_plot(results_parsers, result_folder,
                 mean_y_values = np.mean(y_values, axis=0)
                 std_y_values = np.std(y_values, axis=0)
                 if errorbars:
-                    fig.add_trace(go.Scatter(x=range(len(mean_y_values)), y=mean_y_values, mode='lines',
+                    fig.add_trace(go.Scatter(x=list(range(len(mean_y_values))), y=mean_y_values, mode='lines',
                                              name=policy, error_y=dict(type='data', array=std_y_values, visible=True)))
                 else:
-                     fig.add_trace(go.Scatter(x=range(len(mean_y_values)), y=mean_y_values, mode='lines',
+                     fig.add_trace(go.Scatter(x=list(range(len(mean_y_values))), y=mean_y_values, mode='lines',
                                              name=policy))
             fig.update_layout(
                 title=f"Speeds for {demand} demand and {av_rate} AV rate",
