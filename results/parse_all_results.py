@@ -1,7 +1,7 @@
 import os
 import pickle
 
-from matplotlib import pyplot as plt
+import plotly.graph_objects as go
 
 from results.parse_exp_results import ResultsParser
 import pandas as pd
@@ -164,7 +164,7 @@ def create_speeds_plot(results_parsers, result_folder,
 
     for demand in demands:
         for av_rate in av_rates:
-            fig, av_rate_ax = plt.subplots()
+            fig = go.Figure()
             for policy in policies:
                 task_parsers = list(filter(lambda x: x.av_rate == av_rate and
                                                      x.demand_name == demand and
@@ -179,15 +179,19 @@ def create_speeds_plot(results_parsers, result_folder,
                 mean_y_values = np.mean(y_values, axis=0)
                 std_y_values = np.std(y_values, axis=0)
                 if errorbars:
-                    av_rate_ax.errorbar(range(len(mean_y_values)), mean_y_values, yerr=std_y_values, label=policy)
+                    fig.add_trace(go.Scatter(x=range(len(mean_y_values)), y=mean_y_values, mode='lines',
+                                             name=policy, error_y=dict(type='data', array=std_y_values, visible=True)))
                 else:
-                    av_rate_ax.plot(range(len(mean_y_values)), mean_y_values, label=policy)
-            av_rate_ax.set_title(f"Speeds for {demand} demand and {av_rate} AV rate")
-            av_rate_ax.set_xlabel("Time")
-            av_rate_ax.set_ylabel("Speed")
-            av_rate_ax.legend()
+                     fig.add_trace(go.Scatter(x=range(len(mean_y_values)), y=mean_y_values, mode='lines',
+                                             name=policy))
+            fig.update_layout(
+                title=f"Speeds for {demand} demand and {av_rate} AV rate",
+                xaxis_title="Time",
+                yaxis_title="Speed",
+                legend_title="Policies"
+            )
             output_filename = f"Speeds_{demand}_{av_rate}" + ("_PTL" if PTL else "") + ".png"
-            plt.savefig(os.path.join(result_folder, output_filename))
+            fig.write_html(os.path.join(result_folder, output_filename))
 
 
 def parse_all_results(output_folder="SUMO/outputs/network_new", one_demand=None, one_av_rate=None):
