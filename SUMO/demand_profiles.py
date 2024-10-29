@@ -33,34 +33,34 @@ class Demand:
 
 
 
-class ScenariosDemand(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {
-            6: 4000, 7: 7000, 8: 7000, 9: 4000,  # RUSH HOURS
-            10: 0, 11: 0,  # BREAK
-            12: 9000,  # PEAK
-            13: 0, 14: 0,  # BREAK
-            15: 5800, 16: 5800,  # MID DAY
-            17: 0, 18: 0,  # BREAK
-            19: 4000, 20: 4000,  # WEEKEND
-            21: 0, 22: 0,  # BREAK
-            23: 4000, 24: 5000, 25: 6000, 26: 7000, 27: 6000, 28: 5000, 29: 4000  # Moderate Peak
-        }
-        self.bus_amount = {
-            6: 30, 7: 60, 8: 60, 9: 30,  # RUSH HOURS
-            10: 0, 11: 0,  # BREAK
-            12: 40,  # PEAK
-            13: 0, 14: 0,  # BREAK
-            15: 40, 16: 40,  # MID DAY
-            17: 0, 18: 0,  # BREAK
-            19: 0, 20: 0,  # WEEKEND
-            21: 0, 22: 0,  # BREAK
-            23: 30, 24: 40, 25: 50, 26: 60, 27: 50, 28: 40, 29: 30  # Moderate Peak
-        }
-        self.hour_len = 1800
-    def __str__(self):
-        return "Scenarios"
+# class ScenariosDemand(Demand):
+#     def __init__(self):
+#         super().__init__()
+#         self.veh_amount = {
+#             6: 4000, 7: 7000, 8: 7000, 9: 4000,  # RUSH HOURS
+#             10: 0, 11: 0,  # BREAK
+#             12: 9000,  # PEAK
+#             13: 0, 14: 0,  # BREAK
+#             15: 5800, 16: 5800,  # MID DAY
+#             17: 0, 18: 0,  # BREAK
+#             19: 4000, 20: 4000,  # WEEKEND
+#             21: 0, 22: 0,  # BREAK
+#             23: 4000, 24: 5000, 25: 6000, 26: 7000, 27: 6000, 28: 5000, 29: 4000  # Moderate Peak
+#         }
+#         self.bus_amount = {
+#             6: 30, 7: 60, 8: 60, 9: 30,  # RUSH HOURS
+#             10: 0, 11: 0,  # BREAK
+#             12: 40,  # PEAK
+#             13: 0, 14: 0,  # BREAK
+#             15: 40, 16: 40,  # MID DAY
+#             17: 0, 18: 0,  # BREAK
+#             19: 0, 20: 0,  # WEEKEND
+#             21: 0, 22: 0,  # BREAK
+#             23: 30, 24: 40, 25: 50, 26: 60, 27: 50, 28: 40, 29: 30  # Moderate Peak
+#         }
+#         self.hour_len = 1800
+#     def __str__(self):
+#         return "Scenarios"
 
 
 # # class DailyDemand(Demand):
