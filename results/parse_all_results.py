@@ -204,13 +204,13 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", one_demand=None,
         result_folder = os.path.join("results", "output_results", output_folder.split("/")[-1], one_demand)
     os.makedirs(result_folder, exist_ok=True)
     results_parsers = get_all_results_parsers(output_folder, one_demand=one_demand, one_av_rate=one_av_rate)
-    metrics = ["passDelay", "totalDelay", "duration", "passDuration"]
-    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False)
-    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True)
+    # metrics = ["passDelay", "totalDelay", "duration", "passDuration"]
+    # create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False)
+    # create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True)
     create_speeds_plot(results_parsers, PTL=True, result_folder=result_folder, one_demand=one_demand, errorbars=False)
     create_speeds_plot(results_parsers, PTL=False, result_folder=result_folder, one_demand=one_demand, errorbars=False)
-    if "toy" not in output_folder:
-        create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, baseline=True,)
+    # if "toy" not in output_folder:
+    #     create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, baseline=True,)
 
 
 if __name__ == '__main__':
