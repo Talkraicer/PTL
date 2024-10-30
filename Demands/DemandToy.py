@@ -11,5 +11,5 @@ class DemandToy(Demand):
         self.toy = True
 
     def __str__(self):
-        return f"Toy_{self.amount}"
+        return f"Toy{self.amount}"
 
