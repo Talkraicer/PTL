@@ -32,7 +32,6 @@ class Demand:
         raise NotImplementedError
 
 
-
 # class ScenariosDemand(Demand):
 #     def __init__(self):
 #         super().__init__()
@@ -99,100 +98,53 @@ class Demand:
 #
 #     def __str__(self):
 #         return "Extreme"
+# def create_toy_demand_class(name, veh_amount, bus_amount):
+#     class DemandToy(Demand):
+#         def __init__(self):
+#             super().__init__()
+#             self.veh_amount = {6: veh_amount}
+#             self.bus_amount = {6: bus_amount}
+#             self.hour_len = 3600
+#             self.toy = True
+#
+#         def __str__(self):
+#             return name
+#
+#     DemandToy.__name__ = name
+#     return DemandToy
+#
+#
+# # Creating instances for each specific demand class
+# DemandToy1000 = create_toy_demand_class("Toy1000", 1000, 10)
+# DemandToy2000 = create_toy_demand_class("Toy2000", 2000, 20)
+# DemandToy3000 = create_toy_demand_class("Toy3000", 3000, 30)
+# DemandToy4000 = create_toy_demand_class("Toy4000", 4000, 40)
+# DemandToy5000 = create_toy_demand_class("Toy5000", 5000, 50)
+# DemandToy6000 = create_toy_demand_class("Toy6000", 6000, 60)
+# DemandToy7000 = create_toy_demand_class("Toy7000", 7000, 70)
+# DemandToy8000 = create_toy_demand_class("Toy8000", 8000, 80)
 
-class DemandToy1000(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 1000}
-        self.bus_amount = {6: 10}
+def create_toy_uniform_demand_class(name, veh_amount, bus_amount):
+    class DemandToyUniform(Demand):
+        def __init__(self):
+            super().__init__()
+            self.veh_amount = {6: veh_amount}
+            self.bus_amount = {6: bus_amount}
+            self.prob_pass_hd = {1:0.2, 2:0.2, 3:0.2, 4:0.2, 5:0.2}
+            self.prob_pass_av = {1:0.2, 2:0.2, 3:0.2, 4:0.2, 5:0.2}
+            self.hour_len = 3600
+            self.toy = True
 
-        self.hour_len = 3600
-        self.toy = True
+        def __str__(self):
+            return name
 
-    def __str__(self):
-        return "Toy1000"
+    DemandToyUniform.__name__ = name
+    return DemandToyUniform
 
-class DemandToy2000(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 2000}
-        self.bus_amount = {6: 20}
 
-        self.hour_len = 3600
-        self.toy = True
-
-    def __str__(self):
-        return "Toy2000"
-
-class DemandToy3000(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 3000}
-        self.bus_amount = {6: 30}
-
-        self.hour_len = 3600
-        self.toy = True
-
-    def __str__(self):
-        return "Toy3000"
-
-class DemandToy4000(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 4000}
-        self.bus_amount = {6: 40}
-
-        self.hour_len = 3600
-        self.toy = True
-
-    def __str__(self):
-        return "Toy4000"
-
-class DemandToy5000(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 5000}
-        self.bus_amount = {6: 50}
-
-        self.hour_len = 3600
-        self.toy = True
-
-    def __str__(self):
-        return "Toy5000"
-
-class DemandToy6000(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 6000}
-        self.bus_amount = {6: 60}
-
-        self.hour_len = 3600
-        self.toy = True
-
-    def __str__(self):
-        return "Toy6000"
-
-class DemandToy7000(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 7000}
-        self.bus_amount = {6: 70}
-
-        self.hour_len = 3600
-        self.toy = True
-
-    def __str__(self):
-        return "Toy7000"
-
-class DemandToy8000(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 8000}
-        self.bus_amount = {6: 80}
-
-        self.hour_len = 3600
-        self.toy = True
-
-    def __str__(self):
-        return "Toy8000"
-
+# Creating instances for each specific demand class
+DemandToyUniform1000 = create_toy_uniform_demand_class("Toy1000", 1000, 10)
+DemandToyUniform2000 = create_toy_uniform_demand_class("Toy2000", 2000, 20)
+DemandToyUniform3000 = create_toy_uniform_demand_class("Toy3000", 3000, 30)
+DemandToyUniform4000 = create_toy_uniform_demand_class("Toy4000", 4000, 40)
+DemandToyUniform5000 = create_toy_uniform_demand_class("Toy5000", 5000, 50)
