@@ -47,7 +47,7 @@ def main(args):
     if args.demand is None:
         demands = get_all_subclasses(demand_profiles.Demand)
     else:
-        demands = [getattr(demand_profiles, args.demand)]
+        globals().get(args.demand)
     for demand in demands:
         if demand.ranges is not None:
             for amount in demand.ranges:
