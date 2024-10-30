@@ -43,7 +43,7 @@ def simulate(args, logger=None):
 
 
 def main(args):
-    demand_profiles = []
+    demand_instances = []
     if args.demand is None:
         demands = get_all_subclasses(demand_profiles.Demand)
     else:
@@ -51,9 +51,9 @@ def main(args):
     for demand in demands:
         if demand.ranges is not None:
             for amount in demand.ranges:
-                demand_profiles.append(demand(amount))
+                demand_instances.append(demand(amount))
         else:
-            demand_profiles.append(demand())
+            demand_instances.append(demand())
     num_exps = args.num_experiments
     np.random.seed(args.seed)
     seeds = [np.random.randint(0, 10000) for _ in range(num_exps)]
@@ -63,7 +63,7 @@ def main(args):
         else [getattr(static_step_handle_functions, args.policy)]
     simulation_args = []
     net_file = args.net_file + ".net.xml"
-    for demand in demand_profiles:
+    for demand in demand_instances:
         for seed in seeds:
             for policy in policies:
                 if policy.is_num_pass_dependent:
@@ -86,7 +86,7 @@ def main(args):
     with Pool(num_processes) as pool:
         list(tqdm(pool.imap(simulate, simulation_args), total=len(simulation_args)))
     if args.parse_results:
-        parse_all_results(output_folder=f"SUMO/outputs/{args.net_file}", one_demand=demand_profiles)
+        parse_all_results(output_folder=f"SUMO/outputs/{args.net_file}", demands=demand_instances)
 
 if __name__ == '__main__':
     main(get_args())
