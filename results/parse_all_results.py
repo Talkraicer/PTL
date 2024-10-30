@@ -9,15 +9,15 @@ import numpy as np
 from multiprocessing import Pool
 from tqdm import tqdm
 from SUMO.netfile_utils import get_PTL_lanes
-
+from Demands.DemandToyUniform import DemandToyUniform
 def parse_experiment(args):
     exp_path, PTL_lanes = args
     """Helper function to parse a single experiment path."""
     return ResultsParser(exp_path,PTL_lanes=PTL_lanes)
 
 
-def get_all_results_parsers(outputs_folder, one_demand=None, one_av_rate=None):
-    demands = os.listdir(outputs_folder) if not one_demand else [one_demand]
+def get_all_results_parsers(outputs_folder, demands=None, one_av_rate=None):
+    demands = os.listdir(outputs_folder) if not demands else demands
 
     net_file = [f for f in os.listdir(outputs_folder) if f.endswith(".net.xml")][0]
     net_file = os.path.join(outputs_folder, net_file)
@@ -155,10 +155,10 @@ def create_metrics_results_tables(results_parsers, metrics, result_folder,
 
 def create_speeds_plot(results_parsers, result_folder,
                        PTL=False,
-                       one_demand=None, policies=None, one_av_rate=None,
+                       demands=None, policies=None, one_av_rate=None,
                        errorbars=True
                        ):
-    demands = list(set(map(lambda x: x.demand_name, results_parsers))) if not one_demand else [one_demand]
+    demands = list(set(map(lambda x: x.demand_name, results_parsers))) if not demands else demands
     av_rates = sorted(list(set(map(lambda x: x.av_rate, results_parsers)))) if not one_av_rate else [one_av_rate]
     policies = sorted(list(set(map(lambda x: x.policy_name, results_parsers)))) if not policies else policies
 
@@ -194,24 +194,24 @@ def create_speeds_plot(results_parsers, result_folder,
             fig.write_html(os.path.join(result_folder, output_filename))
 
 
-def parse_all_results(output_folder="SUMO/outputs/network_new", one_demand=None, one_av_rate=None):
-    if not one_demand:
+def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, one_av_rate=None):
+    if not demands:
         demands = os.listdir(output_folder)
         demands = [demand for demand in demands if os.path.isdir(os.path.join(output_folder, demand))]
         demands = sorted(demands)
-        result_folder = os.path.join("results", "output_results",output_folder.split("/")[-1], str(demands))
     else:
-        result_folder = os.path.join("results", "output_results", output_folder.split("/")[-1], one_demand)
+        demands = sorted([demand.__str__() for demand in demands])
+    result_folder = os.path.join("results", "output_results",output_folder.split("/")[-1], str(demands))
     os.makedirs(result_folder, exist_ok=True)
-    results_parsers = get_all_results_parsers(output_folder, one_demand=one_demand, one_av_rate=one_av_rate)
+    results_parsers = get_all_results_parsers(output_folder, demands=demands, one_av_rate=one_av_rate)
     metrics = ["passDelay", "totalDelay", "duration", "passDuration"]
-    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False)
-    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True)
-    create_speeds_plot(results_parsers, PTL=True, result_folder=result_folder, one_demand=one_demand, errorbars=False)
-    create_speeds_plot(results_parsers, PTL=False, result_folder=result_folder, one_demand=one_demand, errorbars=False)
+    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False, demands=demands)
+    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True, demands=demands)
+    create_speeds_plot(results_parsers, PTL=True, result_folder=result_folder, demands=demands, errorbars=False)
+    create_speeds_plot(results_parsers, PTL=False, result_folder=result_folder, demands=demands, errorbars=False)
     if "toy" not in output_folder:
         create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, baseline=True,)
 
 
 if __name__ == '__main__':
-    parse_all_results("SUMO/outputs/network_toy")
+    parse_all_results("SUMO/outputs/network_toy", demands=[DemandToyUniform(amount) for amount in DemandToyUniform.ranges])

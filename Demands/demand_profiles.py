@@ -6,6 +6,7 @@ def normalize_dict(d):
 
 
 class Demand:
+    ranges = None
     def __init__(self, av_pass_factor=1, exit_prop=0.1):
         self.prob_pass_hd = {1: 0.63, 2: 0.28, 3: 0.06, 4: 0.02,
                              5: 0.01}  # Probability of having k passengers in a human-driven vehicle based on the data
@@ -98,97 +99,6 @@ class Demand:
 #
 #     def __str__(self):
 #         return "Extreme"
-# def create_toy_demand_class(name, veh_amount, bus_amount):
-#     class DemandToy(Demand):
-#         def __init__(self):
-#             super().__init__()
-#             self.veh_amount = {6: veh_amount}
-#             self.bus_amount = {6: bus_amount}
-#             self.hour_len = 3600
-#             self.toy = True
-#
-#         def __str__(self):
-#             return name
-#
-#     DemandToy.__name__ = name
-#     return DemandToy
-#
-#
-# # Creating instances for each specific demand class
-# DemandToy1000 = create_toy_demand_class("Toy1000", 1000, 10)
-# DemandToy2000 = create_toy_demand_class("Toy2000", 2000, 20)
-# DemandToy3000 = create_toy_demand_class("Toy3000", 3000, 30)
-# DemandToy4000 = create_toy_demand_class("Toy4000", 4000, 40)
-# DemandToy5000 = create_toy_demand_class("Toy5000", 5000, 50)
-# DemandToy6000 = create_toy_demand_class("Toy6000", 6000, 60)
-# DemandToy7000 = create_toy_demand_class("Toy7000", 7000, 70)
-# DemandToy8000 = create_toy_demand_class("Toy8000", 8000, 80)
-
-class DemandToyUniform1000(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 1000}
-        self.bus_amount = {6: 10}
-        self.prob_pass_hd = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.2, 5: 0.2}
-        self.prob_pass_av = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.2, 5: 0.2}
-        self.hour_len = 3600
-        self.toy = True
-
-    def __str__(self):
-        return "ToyUniform1000"
 
 
-class DemandToyUniform2000(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 2000}
-        self.bus_amount = {6: 20}
-        self.prob_pass_hd = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.2, 5: 0.2}
-        self.prob_pass_av = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.2, 5: 0.2}
-        self.hour_len = 3600
-        self.toy = True
 
-    def __str__(self):
-        return "ToyUniform2000"
-
-
-class DemandToyUniform3000(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 3000}
-        self.bus_amount = {6: 30}
-        self.prob_pass_hd = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.2, 5: 0.2}
-        self.prob_pass_av = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.2, 5: 0.2}
-        self.hour_len = 3600
-        self.toy = True
-
-    def __str__(self):
-        return "ToyUniform3000"
-
-
-class DemandToyUniform4000(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 4000}
-        self.bus_amount = {6: 40}
-        self.prob_pass_hd = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.2, 5: 0.2}
-        self.prob_pass_av = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.2, 5: 0.2}
-        self.hour_len = 3600
-        self.toy = True
-
-    def __str__(self):
-        return "ToyUniform4000"
-
-
-class DemandToyUniform5000(Demand):
-    def __init__(self):
-        super().__init__()
-        self.veh_amount = {6: 5000}
-        self.bus_amount = {6: 50}
-        self.prob_pass_hd = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.2, 5: 0.2}
-        self.prob_pass_av = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.2, 5: 0.2}
-        self.hour_len = 3600
-        self.toy = True
-
-    def __str__(self):
-        return "ToyUniform5000"

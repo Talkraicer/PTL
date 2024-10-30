@@ -2,7 +2,7 @@ import traci
 import numpy as np
 import os
 from xml.etree import ElementTree as ET
-from SUMO.demand_profiles import *
+from Demands.demand_profiles import *
 from SUMO.netfile_utils import *
 import shutil
 class SUMOAdapter:
