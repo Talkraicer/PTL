@@ -9,7 +9,7 @@ import numpy as np
 from multiprocessing import Pool
 from tqdm import tqdm
 from SUMO.netfile_utils import get_PTL_lanes
-from Demands.DemandToyUniform import DemandToyUniform
+from Demands.PassengerDemand import *
 def parse_experiment(args):
     exp_path, PTL_lanes = args
     """Helper function to parse a single experiment path."""
@@ -201,7 +201,7 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
         demands = sorted(demands)
     else:
         demands = sorted([demand.__str__() for demand in demands])
-    result_folder = os.path.join("results", "output_results",output_folder.split("/")[-1], str(demands))
+    result_folder = os.path.join("results", "output_results",output_folder.split("/")[-1], str(demands[0].split("_")[0]))
     os.makedirs(result_folder, exist_ok=True)
     results_parsers = get_all_results_parsers(output_folder, demands=demands, one_av_rate=one_av_rate)
     metrics = ["passDelay", "totalDelay", "duration", "passDuration"]
@@ -214,4 +214,4 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
 
 
 if __name__ == '__main__':
-    parse_all_results("SUMO/outputs/network_toy", demands=[DemandToyUniform(amount) for amount in DemandToyUniform.ranges])
+    parse_all_results("SUMO/outputs/network_toy", demands=[PassDemand(args) for args in PassDemand.ranges])
