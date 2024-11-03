@@ -191,7 +191,8 @@ def create_speeds_plot(results_parsers, result_folder,
                 legend_title="Policies"
             )
             output_filename = f"Speeds_{demand}_{av_rate}" + ("_PTL" if PTL else "") + ".html"
-            fig.write_html(os.path.join(result_folder, output_filename))
+            os.makedirs(os.path.join(result_folder,"plots"), exist_ok=True)
+            fig.write_html(os.path.join(result_folder,"plots", output_filename))
 
 
 def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, one_av_rate=None):
