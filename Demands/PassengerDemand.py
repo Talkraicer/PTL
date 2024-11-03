@@ -6,7 +6,8 @@ class PassDemand(Demand):
 
     ranges = [(amount, av_pass_factor) for amount in PassRange for av_pass_factor in AV_Factor_Range]
 
-    def __init__(self, amount, av_pass_factor):
+    def __init__(self, args):
+        amount, av_pass_factor = args
         super().__init__(av_pass_factor)
         self.amount = amount
         self.veh_amount = {6: amount}
