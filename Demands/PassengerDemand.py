@@ -1,9 +1,9 @@
 from Demands.demand_profiles import Demand
 
-
+PassRange = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000]
+AV_Factor_Range = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]
 class PassDemand(Demand):
-    PassRange = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000]
-    AV_Factor_Range = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]
+
     ranges = [(amount, av_pass_factor) for amount in PassRange for av_pass_factor in AV_Factor_Range]
 
     def __init__(self, amount, av_pass_factor):
