@@ -9,6 +9,7 @@ class PassDemand(Demand):
     def __init__(self, args):
         amount, av_pass_factor = args
         super().__init__(av_pass_factor)
+        self.av_pass_factor = av_pass_factor
         self.amount = amount
         self.veh_amount = {6: amount}
         self.bus_amount = {6: 0}
