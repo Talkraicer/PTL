@@ -24,3 +24,23 @@ class PassDemand(Demand):
 
     def __str__(self):
         return f"PassDemand_{self.amount}_AvPassFactor_{self.av_pass_factor}"
+
+class PassDemandUniform(Demand):
+    ranges = PassRange
+
+    def __init__(self, amount):
+        super().__init__()
+        self.amount = amount
+        self.veh_amount = {6: amount}
+        self.prob_pass_av = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.2, 5: 0.2}
+        self.bus_amount = {6: 0}
+        self.hour_len = 3600
+        self.toy = True
+
+    def set_veh_amount(self, av_rate):
+        exp_av_pass = sum([k * v for k, v in self.prob_pass_av.items()])
+        exp_hd_pass = sum([k * v for k, v in self.prob_pass_hd.items()])
+        exp_pass = exp_av_pass * av_rate + exp_hd_pass * (1 - av_rate)
+        self.veh_amount = {6: self.amount / exp_pass}
+    def __str__(self):
+        return f"PassDemandUniform_{self.amount}"
