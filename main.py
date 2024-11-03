@@ -12,6 +12,7 @@ import warnings
 
 from Demands.DemandToyUniform import *
 from Demands.DemandToy import *
+from Demands.PassengerDemand import *
 
 
 warnings.filterwarnings("ignore", message="API change now handles step as floating point seconds")

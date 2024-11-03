@@ -29,6 +29,9 @@ class Demand:
     def get_bus_amount(self):
         return self.bus_amount
 
+    def set_veh_amount(self, av_rate):
+        pass
+
     def __str__(self):
         raise NotImplementedError
 

@@ -89,6 +89,8 @@ class SUMOAdapter:
         self.config_file = os.path.join(exp_config_folder, f"av_{self.av_rate}.sumocfg")
         self.additional_file = os.path.join(exp_config_folder, f"av_{self.av_rate}.add.xml")
 
+        self.demand_profile.set_veh_amount(self.av_rate)
+
         if self.demand_profile.toy:
             self._create_toy_rou_file(policy.min_num_pass, policy.veh_kinds, policy.arrival_split)
         else:
