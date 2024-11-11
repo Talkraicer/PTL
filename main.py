@@ -68,7 +68,7 @@ def main(args):
         for seed in seeds:
             for policy in policies:
                 if policy.is_num_pass_dependent:
-                    if policy.is_av_rate_dependent or "Pass" in demand.prob_pass_av[0] != 0.63:
+                    if policy.is_av_rate_dependent or demand.prob_pass_av[0] != 0.63:
                         for av_rate in av_rates:
                             for min_num_pass in pass_range:
                                 sumo = SUMOAdapter(demand, seed, av_rate, net_file=net_file,
