@@ -8,7 +8,7 @@ def get_args():
     parser = argparse.ArgumentParser(description='Simulation and Policy Arguments')
     parser.add_argument("-s", '--seed', type=int, default=42,
                         help='Seed for the simulation')
-    parser.add_argument("-n", "--num_experiments", type=int, default=1,
+    parser.add_argument("-n", "--num_experiments", type=int, default=3,
                         help='Number of experiments to run')
     parser.add_argument("--num_processes", type=int, default=None,
                         help='Number of processes to run in parallel, None=All available cores')
