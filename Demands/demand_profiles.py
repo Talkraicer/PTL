@@ -11,7 +11,7 @@ class Demand:
         self.prob_pass_hd = {1: 0.63, 2: 0.28, 3: 0.06, 4: 0.02,
                              5: 0.01}  # Probability of having k passengers in a human-driven vehicle based on the data
         prob_pass_av = {k: v for k, v in self.prob_pass_hd.items()}
-        prob_pass_av[0] *= av_pass_factor
+        prob_pass_av[1] *= av_pass_factor
         self.prob_pass_av = normalize_dict(prob_pass_av)
         bus_pass_range = range(25, 45)
         self.prob_pass_bus = {i: 1 / len(bus_pass_range) for i in bus_pass_range}
