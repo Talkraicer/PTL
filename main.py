@@ -14,7 +14,6 @@ from Demands.DemandToyUniform import *
 from Demands.DemandToy import *
 from Demands.PassengerDemand import *
 
-
 warnings.filterwarnings("ignore", message="API change now handles step as floating point seconds")
 
 
@@ -65,22 +64,28 @@ def main(args):
     simulation_args = []
     net_file = args.net_file + ".net.xml"
     for demand in demand_instances:
+        pass_demand_changed = demand.prob_pass_av[1] != 0.63
         for seed in seeds:
             for policy in policies:
-                if policy.is_num_pass_dependent or demand.prob_pass_av[1] != 0.63:
-                    if policy.is_av_rate_dependent or demand.prob_pass_av[1] != 0.63:
-                        for av_rate in av_rates:
+                if policy.is_av_rate_dependent or pass_demand_changed:
+                    for av_rate in av_rates:
+                        if policy.is_num_pass_dependent:
                             for min_num_pass in pass_range:
                                 sumo = SUMOAdapter(demand, seed, av_rate, net_file=net_file,
                                                    gui=args.gui)
                                 simulation_args.append((sumo, min_num_pass, policy))
-                    else:
-                        for min_num_pass in pass_range:
-                            sumo = SUMOAdapter(demand, seed, 0,net_file=net_file,
+                        else:
+                            sumo = SUMOAdapter(demand, seed, av_rate, net_file=net_file,
                                                gui=args.gui)
-                            simulation_args.append((sumo, min_num_pass, policy))
+                            simulation_args.append((sumo, 0, policy))
+
+                elif policy.is_num_pass_dependent:
+                    for min_num_pass in pass_range:
+                        sumo = SUMOAdapter(demand, seed, 0, net_file=net_file,
+                                           gui=args.gui)
+                        simulation_args.append((sumo, min_num_pass, policy))
                 else:
-                    sumo = SUMOAdapter(demand, seed, 0,net_file=net_file,
+                    sumo = SUMOAdapter(demand, seed, 0, net_file=net_file,
                                        gui=args.gui)
                     simulation_args.append((sumo, 0, policy))
     num_processes = args.num_processes if not args.gui else 1
@@ -88,6 +93,7 @@ def main(args):
         list(tqdm(pool.imap(simulate, simulation_args), total=len(simulation_args)))
     if args.parse_results:
         parse_all_results(output_folder=f"SUMO/outputs/{args.net_file}", demands=demand_instances)
+
 
 if __name__ == '__main__':
     main(get_args())
