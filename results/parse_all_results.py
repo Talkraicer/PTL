@@ -202,7 +202,8 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
         demands = sorted(demands)
     else:
         demands = sorted([demand.__str__() for demand in demands])
-    result_folder = os.path.join("results", "output_results",output_folder.split("/")[-1], str(demands[0].split("_")[0]))
+    folder_name = "_".join(demands[0].split("_")[:-1])
+    result_folder = os.path.join("results", "output_results",output_folder.split("/")[-1], folder_name)
     os.makedirs(result_folder, exist_ok=True)
     results_parsers = get_all_results_parsers(output_folder, demands=demands, one_av_rate=one_av_rate)
     metrics = ["passDelay", "totalDelay", "duration", "passDuration"]

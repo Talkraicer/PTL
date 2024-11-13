@@ -23,7 +23,7 @@ class PassDemand(Demand):
         self.veh_amount = {6: self.amount / exp_pass}
 
     def __str__(self):
-        return f"PassDemand_{self.amount}_AvPassFactor_{self.av_pass_factor}"
+        return f"PassDemand_AvPassFactor_{self.av_pass_factor}_{self.amount}"
 
 class PassDemandUniform(Demand):
     ranges = PassRange

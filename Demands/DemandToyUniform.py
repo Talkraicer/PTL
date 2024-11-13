@@ -15,4 +15,4 @@ class DemandToyUniform(Demand):
         self.toy = True
 
     def __str__(self):
-        return f"ToyUniform{self.amount}"
+        return f"ToyUniform_{self.amount}"
