@@ -57,7 +57,7 @@ def main(args):
     num_exps = args.num_experiments
     np.random.seed(args.seed)
     seeds = [np.random.randint(0, 10000) for _ in range(num_exps)]
-    av_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] if args.av_rate is None else [args.av_rate]
+    av_rates = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] if args.av_rate is None else [args.av_rate]
     pass_range = range(1, 6)
     policies = get_all_subclasses(static_step_handle_functions.StaticStepHandleFunction) if args.policy is None \
         else [getattr(static_step_handle_functions, args.policy)]
