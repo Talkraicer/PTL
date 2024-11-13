@@ -9,7 +9,7 @@ import numpy as np
 from multiprocessing import Pool
 from tqdm import tqdm
 from SUMO.netfile_utils import get_PTL_lanes
-from Demands.DemandToyUniform import DemandToyUniform
+from Demands.PassengerDemand import PassDemand
 def parse_experiment(args):
     exp_path, PTL_lanes = args
     """Helper function to parse a single experiment path."""
@@ -216,4 +216,4 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
 
 
 if __name__ == '__main__':
-    parse_all_results(output_folder=f"SUMO/outputs/network_toy", demands=[DemandToyUniform(r) for r in DemandToyUniform.ranges])
+    parse_all_results(output_folder=f"SUMO/outputs/network_toy", demands=[PassDemand(r) for r in PassDemand.ranges])
