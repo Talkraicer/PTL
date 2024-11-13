@@ -21,4 +21,6 @@ def get_args():
 
     args = parser.parse_args()
     assert os.path.exists(f"SUMO/SUMOconfig/{args.net_file}.net.xml"), f"Network file {args.net_file}.net.xml does not exist"
+    # convert parse_results to bool
+    args.parse_results = args.parse_results == "True"
     return args
