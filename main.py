@@ -57,7 +57,7 @@ def main(args):
     num_exps = args.num_experiments
     np.random.seed(args.seed)
     seeds = [np.random.randint(0, 10000) for _ in range(num_exps)]
-    av_rates = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] if args.av_rate is None else [args.av_rate]
+    av_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] if args.av_rate is None else [args.av_rate]
     pass_range = range(1, 6)
     policies = get_all_subclasses(static_step_handle_functions.StaticStepHandleFunction) if args.policy is None \
         else [getattr(static_step_handle_functions, args.policy)]
@@ -68,7 +68,11 @@ def main(args):
         for seed in seeds:
             for policy in policies:
                 if policy.is_av_rate_dependent or pass_demand_changed:
-                    for av_rate in av_rates:
+                    if not policy.is_av_rate_dependent:
+                        av_rates_run = av_rates + [0.0]
+                    else:
+                        av_rates_run = av_rates
+                    for av_rate in av_rates_run:
                         if policy.is_num_pass_dependent:
                             for min_num_pass in pass_range:
                                 sumo = SUMOAdapter(demand, seed, av_rate, net_file=net_file,
