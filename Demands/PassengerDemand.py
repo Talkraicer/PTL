@@ -12,7 +12,7 @@ class PassDemand(Demand):
         self.av_pass_factor = av_pass_factor
         self.amount = amount
         self.veh_amount = {6: amount}
-        self.bus_amount = {6: 0}
+        self.bus_amount = {6: amount // 100}
         self.hour_len = 3600
         self.toy = True
 
@@ -33,7 +33,7 @@ class PassDemandUniform(Demand):
         self.amount = amount
         self.veh_amount = {6: amount}
         self.prob_pass_av = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.2, 5: 0.2}
-        self.bus_amount = {6: 0}
+        self.bus_amount = {6: amount // 100}
         self.hour_len = 3600
         self.toy = True
 

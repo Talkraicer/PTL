@@ -5,7 +5,7 @@ class DemandToy(Demand):
         super().__init__()
         self.amount = amount
         self.veh_amount = {6: amount}
-        self.bus_amount = {6: amount}
+        self.bus_amount = {6: amount // 100}
 
         self.hour_len = 3600
         self.toy = True

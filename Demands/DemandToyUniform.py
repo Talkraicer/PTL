@@ -8,7 +8,7 @@ class DemandToyUniform(Demand):
         super().__init__()
         self.amount = amount
         self.veh_amount = {6: amount}
-        self.bus_amount = {6: amount}
+        self.bus_amount = {6: amount//100}
         self.prob_pass_av = {1: 0.2, 2: 0.2, 3: 0.2, 4: 0.2, 5: 0.2}
 
         self.hour_len = 3600
