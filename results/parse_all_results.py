@@ -9,7 +9,7 @@ import numpy as np
 from multiprocessing import Pool
 from tqdm import tqdm
 from SUMO.netfile_utils import get_PTL_lanes
-from Demands.PassengerDemand import PassDemand
+from Demands.DemandToy import DemandToy
 def parse_experiment(args):
     exp_path, PTL_lanes = args
     """Helper function to parse a single experiment path."""
@@ -95,8 +95,21 @@ def process_combination(args):
 def highlight_min(s):
     # return style of background color for the minimum value in the column if the column is "mean"
     is_min = s == s.min()
+    unenforceable = [f"Plus_{i}" for i in range(2,6)]
+    min_enforceable = s[~s.index.isin(unenforceable)].min()
+    is_min_enforceable = s == min_enforceable
     if "mean" in s.name:
-        return ['background-color: yellow' if v else '' for v in is_min]
+        styles = []
+        # highlight the minimum value in the mean column, bold the minimum value where enforceable
+        for m, e in zip(is_min, is_min_enforceable):
+            if m and e:
+                styles.append('background-color: yellow; font-weight: bold')
+            elif m:
+                styles.append('background-color: yellow')
+            elif e:
+                styles.append('font-weight: bold')
+            else:
+                styles.append('')
     return ['' for _ in is_min]
 
 def create_metrics_results_tables(results_parsers, metrics, result_folder,
@@ -216,4 +229,4 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
 
 
 if __name__ == '__main__':
-    parse_all_results(output_folder=f"SUMO/outputs/network_toy", demands=[PassDemand(r) for r in PassDemand.ranges])
+    parse_all_results(output_folder=f"SUMO/outputs/network_toy", demands=[DemandToy(r) for r in DemandToy.ranges])
