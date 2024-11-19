@@ -110,6 +110,7 @@ def highlight_min(s):
                 styles.append('font-weight: bold')
             else:
                 styles.append('')
+        return styles
     return ['' for _ in is_min]
 
 def create_metrics_results_tables(results_parsers, metrics, result_folder,
