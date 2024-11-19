@@ -29,15 +29,15 @@ def simulate(args, logger=None):
     if logger:
         logger = logger(sumo.output_folder, policy.__str__(), sumo.get_state_dict(0).keys())
 
-    # run simulation
-    t = 0
-    while not sumo.isFinish():
-        state_dict = {"t": t}
-        policy.handle_step(state_dict)
-        if logger:
-            logger.log(state_dict)
-        sumo.step(t)
-        t += 1
+    # # run simulation
+    # t = 0
+    # while not sumo.isFinish():
+    #     state_dict = {"t": t}
+    #     policy.handle_step(state_dict)
+    #     if logger:
+    #         logger.log(state_dict)
+    #     sumo.step(t)
+    #     t += 1
 
     sumo.close()
 
@@ -95,8 +95,8 @@ def main(args):
     num_processes = args.num_processes if not args.gui else 1
     with Pool(num_processes) as pool:
         list(tqdm(pool.imap(simulate, simulation_args), total=len(simulation_args)))
-    if args.parse_results:
-        parse_all_results(output_folder=f"SUMO/outputs/{args.net_file}", demands=demand_instances)
+    # if args.parse_results:
+    #     parse_all_results(output_folder=f"SUMO/outputs/{args.net_file}", demands=demand_instances)
 
 
 if __name__ == '__main__':
