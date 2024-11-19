@@ -95,7 +95,7 @@ def process_combination(args):
 def highlight_min(s):
     # return style of background color for the minimum value in the column if the column is "mean"
     is_min = s == s.min()
-    unenforceable = [f"Plus_{i}" for i in range(2,6)]
+    unenforceable = [f"Plus_{i}" for i in range(2,6)] + [f"PlusSplit_{i}" for i in range (2,6)]
     min_enforceable = s[~s.index.isin(unenforceable)].min()
     is_min_enforceable = s == min_enforceable
     if "mean" in s.name:
