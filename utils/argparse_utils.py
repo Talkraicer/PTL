@@ -1,8 +1,17 @@
 import argparse
 import os
 
-from Policies import static_step_handle_functions
+# from Policies import static_step_handle_functions
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 def get_args():
     parser = argparse.ArgumentParser(description='Simulation and Policy Arguments')
@@ -16,9 +25,13 @@ def get_args():
     parser.add_argument("-d", "--demand", type=str, default="DemandToyUniform", help='Demand to run, None=all demands')
     parser.add_argument("-av", "--av_rate", type=float, default=None, help='AV rate to run, None=all av rates')
     parser.add_argument("--net_file" , type=str, default="network_toy", help='Network file name (has to be in the SUMOconfig folder)')
-    parser.add_argument("--parse_results", type=bool, default=True, help='Parse results')
+    parser.add_argument("--parse_results", type=str2bool, default=True, help='Parse results')
     parser.add_argument("--gui", type=bool, default=False, help='Run with GUI')
 
     args = parser.parse_args()
     assert os.path.exists(f"SUMO/SUMOconfig/{args.net_file}.net.xml"), f"Network file {args.net_file}.net.xml does not exist"
     return args
+
+if __name__ == '__main__':
+    args = get_args()
+    print(args.parse_results)
