@@ -1,6 +1,8 @@
 import traci
 from SUMO.SUMOAdpater import SUMOAdapter
 from SUMO.netfile_utils import get_PTL_lanes
+
+
 class StaticStepHandleFunction:
     is_num_pass_dependent = False
     is_av_rate_dependent = False
@@ -29,7 +31,6 @@ class Nothing(StaticStepHandleFunction):
     def __init__(self, env: SUMOAdapter):
         super().__init__(env)
 
-
     def after_init_sumo(self):
         PTL_lane_ids = get_PTL_lanes(self.env.network_file)
         for lane in PTL_lane_ids:
@@ -55,6 +56,8 @@ class Plus(StaticStepHandleFunction):
     def __str__(self):
         assert self.min_num_pass is not None, "min_num_pass is not set"
         return f"Plus_{self.min_num_pass}"
+
+
 class StaticNumPass(Plus):
     is_av_rate_dependent = True
 
@@ -86,6 +89,7 @@ class NothingSplit(Nothing):
     def __str__(self):
         return "NothingSplit"
 
+
 class PlusSplit(Plus):
     def __init__(self, env: SUMOAdapter):
         super().__init__(env)
@@ -94,6 +98,7 @@ class PlusSplit(Plus):
     def __str__(self):
         assert self.min_num_pass is not None, "min_num_pass is not set"
         return f"PlusSplit_{self.min_num_pass}"
+
 
 class StaticNumPassSplit(StaticNumPass):
     def __init__(self, env: SUMOAdapter):

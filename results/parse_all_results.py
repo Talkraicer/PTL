@@ -223,8 +223,8 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
     metrics = ["passDelay", "totalDelay", "duration", "passDuration"]
     create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False, demands=demands)
     create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True, demands=demands)
-    # create_speeds_plot(results_parsers, PTL=True, result_folder=result_folder, demands=demands, errorbars=False)
-    # create_speeds_plot(results_parsers, PTL=False, result_folder=result_folder, demands=demands, errorbars=False)
+    create_speeds_plot(results_parsers, PTL=True, result_folder=result_folder, demands=demands, errorbars=False)
+    create_speeds_plot(results_parsers, PTL=False, result_folder=result_folder, demands=demands, errorbars=False)
     if "toy" not in output_folder:
         create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, baseline=True,)
 
