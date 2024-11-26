@@ -186,11 +186,11 @@ def create_speeds_plot(results_parsers, result_folder,
                                            results_parsers))
                 if len(task_parsers) == 0:
                     continue
-                y_values = np.array([rp.mean_speed_PTL() if PTL else rp.mean_speed_all_lanes() for rp in task_parsers])
+                y_values = [rp.mean_speed_PTL() if PTL else rp.mean_speed_all_lanes() for rp in task_parsers]
 
                 # cut all y_values to the same length
                 min_len = min(map(len, y_values))
-                y_values = [y[:min_len] for y in y_values]
+                y_values = np.array([y[:min_len] for y in y_values])
                 masked_y = np.ma.masked_where(y_values == 0, y_values)
 
                 mean_y_values = np.ma.mean(masked_y, axis=0)
