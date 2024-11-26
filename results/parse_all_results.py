@@ -187,11 +187,16 @@ def create_speeds_plot(results_parsers, result_folder,
                 if len(task_parsers) == 0:
                     continue
                 y_values = [rp.mean_speed_PTL() if PTL else rp.mean_speed_all_lanes() for rp in task_parsers]
+
                 # cut all y_values to the same length
                 min_len = min(map(len, y_values))
                 y_values = [y[:min_len] for y in y_values]
-                mean_y_values = np.mean(y_values, axis=0)
-                std_y_values = np.std(y_values, axis=0)
+                masked_y = np.ma.masked_where(y_values == 0, y_values)
+
+                mean_y_values = np.ma.mean(masked_y, axis=0)
+                mean_y_values = mean_y_values.filled(0)
+                std_y_values = np.ma.std(masked_y, axis=0)
+                std_y_values = std_y_values.filled(0)
                 if errorbars:
                     fig.add_trace(go.Scatter(x=list(range(len(mean_y_values))), y=mean_y_values, mode='lines',
                                              name=policy, error_y=dict(type='data', array=std_y_values, visible=True)))
