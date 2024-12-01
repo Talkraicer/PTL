@@ -3,11 +3,12 @@ from SUMO.SUMOAdpater import SUMOAdapter
 from SUMO.netfile_utils import get_PTL_lanes
 
 
-class StaticStepHandleFunction:
+class StepHandleFunction:
+    param_range = [None]
     is_num_pass_dependent = False
     is_av_rate_dependent = False
 
-    def __init__(self, env: SUMOAdapter):
+    def __init__(self, env: SUMOAdapter, param=None):
         # if env.isFinish():
         #     raise Exception("Simulation is not running")
         self.env = env
@@ -27,7 +28,7 @@ class StaticStepHandleFunction:
         pass
 
 
-class Nothing(StaticStepHandleFunction):
+class Nothing(StepHandleFunction):
     def __init__(self, env: SUMOAdapter):
         super().__init__(env)
 
@@ -40,7 +41,7 @@ class Nothing(StaticStepHandleFunction):
         return "Nothing"
 
 
-class Plus(StaticStepHandleFunction):
+class Plus(StepHandleFunction):
     pass_range = range(1, 6)
     is_num_pass_dependent = True
 
@@ -108,3 +109,4 @@ class StaticNumPassSplit(StaticNumPass):
     def __str__(self):
         assert self.min_num_pass is not None, "min_num_pass is not set"
         return f"StaticNumPassSplit_{self.min_num_pass}"
+

@@ -5,6 +5,10 @@ from xml.etree import ElementTree as ET
 from Demands.demand_profiles import *
 from SUMO.netfile_utils import *
 import shutil
+
+from Demands.DemandToy import DemandToy
+
+
 class SUMOAdapter:
     def __init__(self, demand_profile: Demand, seed: int, av_rate: float,
                  route_temp: str = "route_template.rou.xml", net_file: str = "network.net.xml",
@@ -29,12 +33,12 @@ class SUMOAdapter:
 
         self.config_folder = os.path.join(self.template_folder, net_name)
         os.makedirs(self.config_folder, exist_ok=True)
-        self.output_folder = os.path.join(curdir, output_folder, net_name, demand_profile.__str__(), str(av_rate), str(seed))
+        self.output_folder = os.path.join(curdir, output_folder, net_name, demand_profile.__str__(), str(av_rate),
+                                          str(seed))
         os.makedirs(self.output_folder, exist_ok=True)
 
         # put a copy of the network file in the output folder
         shutil.copyfile(self.network_file, os.path.join(curdir, output_folder, net_name, net_file))
-
 
     def allow_vehicles(self, edge: str = "all", veh_types=None, min_num_pass=0):
         if veh_types is None:
@@ -52,19 +56,16 @@ class SUMOAdapter:
             if num_pass >= min_num_pass:
                 traci.vehicle.setVehicleClass(veh_id, "private")
 
-
-
-
     def get_state_dict(self, t):
         state_dict = {"t": t}
         PTL_lane_ids = get_PTL_lanes(self.network_file)
         state_dict["veh_ids_in_PTL"] = [veh_id for lane in PTL_lane_ids for veh_id in
                                         traci.lane.getLastStepVehicleIDs(lane)]
         state_dict["num_vehs_in_PTL"] = len(state_dict["veh_ids_in_PTL"])
-        state_dict["num_total_vehs"] = len(traci.vehicle.getIDList())
-        # get mean vehicles speed
-        state_dict["mean_speed"] = np.mean([traci.vehicle.getSpeed(vehID) for vehID in traci.vehicle.getIDList()]) \
-            if state_dict["num_total_vehs"] > 0 else 0
+        # state_dict["num_total_vehs"] = len(traci.vehicle.getIDList())
+        # # get mean vehicles speed
+        # state_dict["mean_speed"] = np.mean([traci.vehicle.getSpeed(vehID) for vehID in traci.vehicle.getIDList()]) \
+        #     if state_dict["num_total_vehs"] > 0 else 0
         state_dict["mean_speed_in_PTL"] = np.mean(
             [traci.vehicle.getSpeed(vehID) for vehID in state_dict["veh_ids_in_PTL"]]) \
             if state_dict["num_vehs_in_PTL"] > 0 else 0
@@ -83,7 +84,7 @@ class SUMOAdapter:
     def init_simulation(self, policy):
         self.policy_name = policy.__str__()
         exp_config_folder = os.path.join(self.config_folder, self.demand_profile.__str__(), str(self.seed),
-                                     self.policy_name)
+                                         self.policy_name)
         os.makedirs(exp_config_folder, exist_ok=True)
         self.route_file = os.path.join(exp_config_folder, f"av_{self.av_rate}.rou.xml")
         self.config_file = os.path.join(exp_config_folder, f"av_{self.av_rate}.sumocfg")
@@ -155,7 +156,7 @@ class SUMOAdapter:
                     elem.tail = '\n\t\t'
                     vTypeDist.append(elem)
 
-    def _append_flow(self, root, hour, in_j, out_j, prob, type_dist="vehicleDist", depart_lane=None, poisson = False):
+    def _append_flow(self, root, hour, in_j, out_j, prob, type_dist="vehicleDist", depart_lane=None, poisson=False):
 
         flow_id = f'flow_{type_dist}_{hour}_{in_j}_{out_j}' if depart_lane is None else f'flow_{type_dist}_{hour}_{in_j}_{out_j}_{depart_lane}'
         flow = ET.Element('flow', id=flow_id, type=type_dist,
@@ -275,7 +276,7 @@ class SUMOAdapter:
                     elem.tail = '\n\t\t'
                     vTypeDist.append(elem)
 
-    def _create_toy_rou_file(self, min_num_pass=None, veh_kinds = None, arrival_split=False):
+    def _create_toy_rou_file(self, min_num_pass=None, veh_kinds=None, arrival_split=False):
         self.route_template = self.route_template.replace("route_template", "toy_route_template")
         tree = ET.parse(self.route_template)
         root = tree.getroot()
@@ -292,10 +293,10 @@ class SUMOAdapter:
         # handle the vehicle distribution
         hdv_prop = 1 - self.av_rate
         total_dist = {
-            f"HD_{k}": v*hdv_prop for k, v in self.demand_profile.prob_pass_hd.items()
+            f"HD_{k}": v * hdv_prop for k, v in self.demand_profile.prob_pass_hd.items()
         }
         total_dist.update({
-            f"AV_{k}": v*self.av_rate for k, v in self.demand_profile.prob_pass_av.items()
+            f"AV_{k}": v * self.av_rate for k, v in self.demand_profile.prob_pass_av.items()
         })
 
         ptl_dist = {k: v for k, v in total_dist.items()
@@ -321,15 +322,14 @@ class SUMOAdapter:
             bus_veh_prop = self.demand_profile.bus_amount[hour] / hour_demand
 
             if arrival_split:
-                for lane in in_lanes_indices:
-                    flow_prob = total_arrival_prob * ptl_prop / len(in_lanes)
-                    if flow_prob > 0:
-                        self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
-                                          type_dist="PTLDist", poisson=True)
-                    if total_arrival_prob * bus_veh_prop > 0:
-                        self._append_flow(root, hour, in_junc, out_junc,
-                                          total_arrival_prob * bus_veh_prop / len(in_lanes),
-                                          depart_lane=lane, type_dist="busDist")
+                flow_prob = total_arrival_prob * ptl_prop
+                if flow_prob > 0:
+                    self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane="random",
+                                      type_dist="PTLDist", poisson=True)
+                if total_arrival_prob * bus_veh_prop > 0:
+                    self._append_flow(root, hour, in_junc, out_junc,
+                                      total_arrival_prob * bus_veh_prop / len(in_lanes),
+                                      depart_lane=None, type_dist="busDist")
             else:
                 for lane in in_ptl_lane_indices:
                     flow_prob = total_arrival_prob * ptl_prop / len(in_ptl_lane_indices)
@@ -337,7 +337,8 @@ class SUMOAdapter:
                         self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
                                           type_dist="PTLDist", poisson=True)
                     if total_arrival_prob * bus_veh_prop > 0:
-                        self._append_flow(root, hour, in_junc, out_junc, total_arrival_prob * bus_veh_prop/ len(in_ptl_lane_indices),
+                        self._append_flow(root, hour, in_junc, out_junc,
+                                          total_arrival_prob * bus_veh_prop / len(in_ptl_lane_indices),
                                           depart_lane=lane, type_dist="busDist")
             if total_arrival_prob * non_ptl_prop > 0:
                 for lane in not_ptl_lanes_indices:
@@ -397,4 +398,4 @@ class SUMOAdapter:
 
 
 if __name__ == '__main__':
-    adapter_daily = SUMOAdapter(DemandToy1000(), 42, 0, net_file="network_toy.net.xml")
+    adapter_daily = SUMOAdapter(DemandToy(5000), 42, 0, net_file="network_toy.net.xml")
