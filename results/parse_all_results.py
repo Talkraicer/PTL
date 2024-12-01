@@ -44,8 +44,8 @@ def get_all_results_parsers(outputs_folder, demands=None, one_av_rate=None):
     if len(tasks) > 1:
         # Use multiprocessing to parse experiments in parallel with tqdm
         with Pool() as pool:
-            results_parsers += list(tqdm(pool.imap(parse_experiment, tasks), total=len(tasks)))
-
+             pool_output = list(tqdm(pool.imap(parse_experiment, tasks), total=len(tasks)))
+        results_parsers.extend(pool_output)
     return results_parsers
 
 

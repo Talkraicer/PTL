@@ -95,8 +95,8 @@ def main(args):
     num_processes = args.num_processes if not args.gui else 1
     with Pool(num_processes) as pool:
         list(tqdm(pool.imap(simulate, simulation_args), total=len(simulation_args)))
-    # if args.parse_results:
-    #     parse_all_results(output_folder=f"SUMO/outputs/{args.net_file}", demands=demand_instances)
+    if args.parse_results:
+        parse_all_results(output_folder=f"SUMO/outputs/{args.net_file}", demands=demand_instances)
 
 
 if __name__ == '__main__':
