@@ -226,8 +226,8 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
     os.makedirs(result_folder, exist_ok=True)
     results_parsers = get_all_results_parsers(output_folder, demands=demands, one_av_rate=one_av_rate)
     metrics = ["passDelay", "totalDelay", "duration", "passDuration"]
-    # create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False, demands=demands)
-    # create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True, demands=demands)
+    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False, demands=demands)
+    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True, demands=demands)
     create_speeds_plot(results_parsers, PTL=True, result_folder=result_folder, demands=demands, errorbars=False)
     create_speeds_plot(results_parsers, PTL=False, result_folder=result_folder, demands=demands, errorbars=False)
     if "toy" not in output_folder:
@@ -235,4 +235,4 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
 
 
 if __name__ == '__main__':
-    parse_all_results(output_folder=f"SUMO/outputs/network_toy", demands=[DemandToy(r) for r in DemandToy.ranges])
+    parse_all_results(output_folder=f"SUMO/outputs/network_toy_creation", demands=[DemandToy(r) for r in DemandToy.ranges])
