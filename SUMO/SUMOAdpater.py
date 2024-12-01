@@ -21,6 +21,7 @@ class SUMOAdapter:
         self.seed = seed
 
         self.network_file = os.path.join(self.template_folder, net_file)
+        self.toy = "toy" in self.network_file
         # Parsing the net file:
         self.lane_num = get_first_edge_lanenum(self.network_file)
         self.ramps_num = get_num_ramps(self.network_file)
@@ -92,7 +93,7 @@ class SUMOAdapter:
 
         self.demand_profile.set_veh_amount(self.av_rate)
 
-        if self.demand_profile.toy:
+        if self.toy:
             self._create_toy_rou_file(policy.min_num_pass, policy.veh_kinds, policy.arrival_split)
         else:
             self._create_route_file(policy.veh_kinds, policy.min_num_pass, policy.endToEnd)

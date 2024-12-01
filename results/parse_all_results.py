@@ -10,10 +10,12 @@ from multiprocessing import Pool
 from tqdm import tqdm
 from SUMO.netfile_utils import get_PTL_lanes
 from Demands.DemandToy import DemandToy
+
+
 def parse_experiment(args):
     exp_path, PTL_lanes = args
     """Helper function to parse a single experiment path."""
-    return ResultsParser(exp_path,PTL_lanes=PTL_lanes)
+    return ResultsParser(exp_path, PTL_lanes=PTL_lanes)
 
 
 def get_all_results_parsers(outputs_folder, demands=None, one_av_rate=None):
@@ -40,11 +42,11 @@ def get_all_results_parsers(outputs_folder, demands=None, one_av_rate=None):
                     if os.path.exists(exp_path + "_ResultsParser.pkl"):
                         results_parsers.append(pickle.load(open(exp_path + "_ResultsParser.pkl", "rb")))
                     else:
-                        tasks.append((exp_path,PTL_lanes))  # Collecting paths to process
+                        tasks.append((exp_path, PTL_lanes))  # Collecting paths to process
     if len(tasks) > 1:
         # Use multiprocessing to parse experiments in parallel with tqdm
         with Pool() as pool:
-             pool_output = list(tqdm(pool.imap(parse_experiment, tasks), total=len(tasks)))
+            pool_output = list(tqdm(pool.imap(parse_experiment, tasks), total=len(tasks)))
         results_parsers.extend(pool_output)
     return results_parsers
 
@@ -95,7 +97,7 @@ def process_combination(args):
 def highlight_min(s):
     # return style of background color for the minimum value in the column if the column is "mean"
     is_min = s == s.min()
-    unenforceable = [f"Plus_{i}" for i in range(2,6)] + [f"PlusSplit_{i}" for i in range (2,6)]
+    unenforceable = [f"Plus_{i}" for i in range(2, 6)] + [f"PlusSplit_{i}" for i in range(2, 6)]
     min_enforceable = s[~s.index.isin(unenforceable)].min()
     is_min_enforceable = s == min_enforceable
     if "mean" in s.name:
@@ -112,6 +114,7 @@ def highlight_min(s):
                 styles.append('')
         return styles
     return ['' for _ in is_min]
+
 
 def create_metrics_results_tables(results_parsers, metrics, result_folder,
                                   demands=None, av_rates=None, policies=None,
@@ -164,8 +167,9 @@ def create_metrics_results_tables(results_parsers, metrics, result_folder,
         df_metric.to_pickle(os.path.join(result_folder, f"{df_name}.pkl"))
 
         # Create a table where the min value in the mean column is highlighted
-        df_metric.style.apply(highlight_min)\
-                .to_excel(os.path.join(result_folder, f"{df_name}.xlsx"))
+        df_metric.style.apply(highlight_min) \
+            .to_excel(os.path.join(result_folder, f"{df_name}.xlsx"))
+
 
 def create_speeds_plot(results_parsers, result_folder,
                        PTL=False,
@@ -201,7 +205,7 @@ def create_speeds_plot(results_parsers, result_folder,
                     fig.add_trace(go.Scatter(x=list(range(len(mean_y_values))), y=mean_y_values, mode='lines',
                                              name=policy, error_y=dict(type='data', array=std_y_values, visible=True)))
                 else:
-                     fig.add_trace(go.Scatter(x=list(range(len(mean_y_values))), y=mean_y_values, mode='lines',
+                    fig.add_trace(go.Scatter(x=list(range(len(mean_y_values))), y=mean_y_values, mode='lines',
                                              name=policy))
             fig.update_layout(
                 title=f"Speeds for {demand} demand and {av_rate} AV rate",
@@ -210,8 +214,8 @@ def create_speeds_plot(results_parsers, result_folder,
                 legend_title="Policies"
             )
             output_filename = f"Speeds_{demand}_{av_rate}" + ("_PTL" if PTL else "") + ".html"
-            os.makedirs(os.path.join(result_folder,"plots"), exist_ok=True)
-            fig.write_html(os.path.join(result_folder,"plots", output_filename))
+            os.makedirs(os.path.join(result_folder, "plots"), exist_ok=True)
+            fig.write_html(os.path.join(result_folder, "plots", output_filename))
 
 
 def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, one_av_rate=None):
@@ -222,7 +226,7 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
     else:
         demands = sorted([demand.__str__() for demand in demands])
     folder_name = "_".join(demands[0].split("_")[:-1])
-    result_folder = os.path.join("results", "output_results",output_folder.split("/")[-1], folder_name)
+    result_folder = os.path.join("results", "output_results", output_folder.split("/")[-1], folder_name)
     os.makedirs(result_folder, exist_ok=True)
     results_parsers = get_all_results_parsers(output_folder, demands=demands, one_av_rate=one_av_rate)
     metrics = ["passDelay", "totalDelay", "duration", "passDuration"]
@@ -231,8 +235,9 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
     create_speeds_plot(results_parsers, PTL=True, result_folder=result_folder, demands=demands, errorbars=False)
     create_speeds_plot(results_parsers, PTL=False, result_folder=result_folder, demands=demands, errorbars=False)
     if "toy" not in output_folder:
-        create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, baseline=True,)
+        create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, baseline=True, )
 
 
 if __name__ == '__main__':
-    parse_all_results(output_folder=f"SUMO/outputs/network_toy_creation", demands=[DemandToy(r) for r in DemandToy.ranges])
+    parse_all_results(output_folder=f"SUMO/outputs/network_toy_creation",
+                      demands=[DemandToy(r) for r in DemandToy.ranges])
