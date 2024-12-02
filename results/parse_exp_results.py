@@ -46,6 +46,7 @@ class ResultsParser:
             for key in dict.keys():
                 dict[key].append(tripinfo.get(key))
         df = pd.DataFrame(dict)
+        df["departDelay"] = df.departDelay.astype(float)
         df["totalDelay"] = df.departDelay.astype(float) + df.timeLoss.astype(float)
         df["vType"] = df["vType"].apply(lambda x: x.split("@")[0])
         df["numPass"] = df["vType"].apply(lambda x: x.split("_")[1]).astype(int)
@@ -54,7 +55,7 @@ class ResultsParser:
         df["passDelay"] = df["totalDelay"] * df["numPass"]
         df["passDuration"] = df["duration"] * df["numPass"]
         df["timeLoss"] = df["timeLoss"].astype(float)
-        return df[["id", "vType", "numPass", "duration", "totalDelay", "passDelay", "passDuration", "timeLoss"]]
+        return df[["id", "vType", "numPass", "duration", "totalDelay", "passDelay", "passDuration", "timeLoss","departDelay"]]
 
     def _append_all_dataframes(self, key, value):
         if key not in self.speed_df:
