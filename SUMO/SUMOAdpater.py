@@ -203,14 +203,14 @@ class SUMOAdapter:
                     left_in -= out_prob
                     flow_prob = total_arrival_prob * prob
                     if total_arrival_prob * self.demand_profile.hour_len > 1:
-                        self._append_flow(root, hour, in_ramp, out_ramp, flow_prob)
+                        self._append_flow(root, hour, in_ramp, out_ramp, flow_prob, poisson=True)
                         if total_arrival_prob * bus_veh_prop > 0:
                             self._append_flow(root, hour, in_ramp, out_ramp, flow_prob * bus_veh_prop,
                                               type_dist="busDist")
                     else:
                         print(f'hour {hour} in_ramp {in_ramp} out_ramp {out_ramp} prob {flow_prob}')
                 # In ramps to Out junction
-                self._append_flow(root, hour, in_ramp, out_junc, total_arrival_prob * in_prob * left_in)
+                self._append_flow(root, hour, in_ramp, out_junc, total_arrival_prob * in_prob * left_in,poisson= True)
                 if total_arrival_prob * in_prob * left_in * bus_veh_prop > 0:
                     self._append_flow(root, hour, in_ramp, out_junc,
                                       total_arrival_prob * in_prob * left_in * bus_veh_prop,
@@ -220,7 +220,7 @@ class SUMOAdapter:
                 taken += out_prob
                 for lane in range(self.lane_num):
                     flow_prob = total_arrival_prob * out_prob / self.lane_num
-                    self._append_flow(root, hour, in_junc, out_ramp, flow_prob, depart_lane=lane)
+                    self._append_flow(root, hour, in_junc, out_ramp, flow_prob, depart_lane=lane,poisson= True)
                     if total_arrival_prob * bus_veh_prop > 0:
                         self._append_flow(root, hour, in_junc, out_ramp, flow_prob * bus_veh_prop,
                                           depart_lane=lane, type_dist="busDist")
@@ -231,7 +231,7 @@ class SUMOAdapter:
             for lane in range(self.lane_num):
                 flow_prob = total_arrival_prob * in_out_prob / self.lane_num
                 self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
-                                  type_dist="vehicleDist_endToEnd")
+                                  type_dist="vehicleDist_endToEnd",poisson= True)
 
                 if total_arrival_prob * bus_veh_prop > 0:
                     self._append_flow(root, hour, in_junc, out_junc, flow_prob * bus_veh_prop,
