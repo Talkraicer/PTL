@@ -4,24 +4,18 @@ import numpy as np
 
 from SUMO.SUMOAdpater import SUMOAdapter
 import Demands.demand_profiles as demand_profiles
-import Policies.static_step_handle_functions as static_step_handle_functions
 from utils.argparse_utils import get_args
 from utils.class_utils import get_all_subclasses
+from Policies.policy_parameters import create_policy_definitions
+from Demands.demand_parameters import DEMAND_DEFINITIONS
 from results.parse_all_results import parse_all_results
 import warnings
-
-from Demands.DemandToyUniform import *
-from Demands.DemandToy import *
-from Demands.PassengerDemand import *
 
 warnings.filterwarnings("ignore", message="API change now handles step as floating point seconds")
 
 
 def simulate(args, logger=None):
-    sumo, min_num_pass, policy, policy_args = args
-    policy = policy(sumo, policy_args) if policy_args is not None else policy(sumo)
-    if policy.is_num_pass_dependent:
-        policy.set_num_pass(min_num_pass)
+    sumo, policy = args
     sumo.init_simulation(policy)  # initialize simulation
     policy.after_init_sumo()
     # initialize logger:
@@ -43,56 +37,33 @@ def simulate(args, logger=None):
 
 
 def main(args):
-    demand_instances = []
-    if args.demand is None:
-        demands = get_all_subclasses(demand_profiles.Demand)
+    if args.demand:
+        demand_instances = [DEMAND_DEFINITIONS[args.demand]["class"](**params) for params in
+                            DEMAND_DEFINITIONS[args.demand]["params"]]
     else:
-        demands = [globals().get(args.demand)]
-    for demand in demands:
-        if demand.ranges is not None:
-            for amount in demand.ranges:
-                demand_instances.append(demand(amount))
-        else:
-            demand_instances.append(demand())
+        demand_instances = [demand["class"](**params) for demand in DEMAND_DEFINITIONS.values() for params in
+                            demand["params"]]
     num_exps = args.num_experiments
     np.random.seed(args.seed)
     seeds = [np.random.randint(0, 10000) for _ in range(num_exps)]
-    av_rates = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] if args.av_rate is None else [args.av_rate]
-    pass_range = range(1, 6)
-    policies = get_all_subclasses(static_step_handle_functions.StepHandleFunction) if args.policy is None \
-        else [getattr(static_step_handle_functions, args.policy)]
+    POLICY_DEFINITIONS = create_policy_definitions(av_rate_range=([args.av_rate] if args.av_rate else None))
+    if args.policy:
+        policy_instances = [POLICY_DEFINITIONS[args.policy]["class"](**params) for params in
+                            POLICY_DEFINITIONS[args.policy]["params"]]
+    else:
+        policy_instances = [policy["class"](**params) for policy in POLICY_DEFINITIONS.values()
+                            for params in policy["params"]]
     simulation_args = []
     net_file = args.net_file + ".net.xml"
     for demand in demand_instances:
         pass_demand_changed = demand.prob_pass_av[1] != 0.63
         for seed in seeds:
-            for policy in policies:
-                for policy_args in policy.param_range:
-                    if policy.is_av_rate_dependent or pass_demand_changed:
-                        if not policy.is_av_rate_dependent:
-                            av_rates_run = av_rates + [0.0]
-                        else:
-                            av_rates_run = av_rates
-                        for av_rate in av_rates_run:
-                            if policy.is_num_pass_dependent:
-                                for min_num_pass in pass_range:
-                                    sumo = SUMOAdapter(demand, seed, av_rate, net_file=net_file,
-                                                       gui=args.gui)
-                                    simulation_args.append((sumo, min_num_pass, policy, policy_args))
-                            else:
-                                sumo = SUMOAdapter(demand, seed, av_rate, net_file=net_file,
-                                                   gui=args.gui)
-                                simulation_args.append((sumo, 0, policy, policy_args))
-
-                    elif policy.is_num_pass_dependent:
-                        for min_num_pass in pass_range:
-                            sumo = SUMOAdapter(demand, seed, 0, net_file=net_file,
-                                               gui=args.gui)
-                            simulation_args.append((sumo, min_num_pass, policy, policy_args))
-                    else:
-                        sumo = SUMOAdapter(demand, seed, 0, net_file=net_file,
-                                           gui=args.gui)
-                        simulation_args.append((sumo, 0, policy, policy_args))
+            for policy in policy_instances:
+                if policy.av_rate != demand.av_rate:
+                    continue
+                sumo = SUMOAdapter(demand, seed, net_file=net_file,
+                                   gui=args.gui)
+                simulation_args.append((sumo, policy))
     num_processes = args.num_processes if not args.gui else 1
     with Pool(num_processes) as pool:
         list(tqdm(pool.imap(simulate, simulation_args), total=len(simulation_args)))

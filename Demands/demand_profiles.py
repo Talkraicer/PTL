@@ -6,8 +6,8 @@ def normalize_dict(d):
 
 
 class Demand:
-    ranges = None
-    def __init__(self, av_pass_factor=1, exit_prop=0.1):
+    def __init__(self, av_rate: float, av_pass_factor=1, exit_prop=0.1):
+        self.av_rate = av_rate
         self.prob_pass_hd = {1: 0.63, 2: 0.28, 3: 0.06, 4: 0.02,
                              5: 0.01}  # Probability of having k passengers in a human-driven vehicle based on the data
         prob_pass_av = {k: v for k, v in self.prob_pass_hd.items()}
@@ -34,7 +34,6 @@ class Demand:
 
     def __str__(self):
         raise NotImplementedError
-
 
 # class ScenariosDemand(Demand):
 #     def __init__(self):
@@ -102,6 +101,3 @@ class Demand:
 #
 #     def __str__(self):
 #         return "Extreme"
-
-
-

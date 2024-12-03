@@ -2,10 +2,8 @@ from Demands.demand_profiles import Demand
 
 
 class DemandToyUniform(Demand):
-    ranges = [1000, 2000, 3000, 4000, 5000]
-
-    def __init__(self, amount):
-        super().__init__()
+    def __init__(self, av_rate: float, amount: int):
+        super().__init__(av_rate=av_rate)
         self.amount = amount
         self.veh_amount = {6: amount}
         self.bus_amount = {6: amount//100}
