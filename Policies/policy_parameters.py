@@ -20,12 +20,13 @@ def create_policy_definitions(min_num_pass_range=range(1, 6), av_rate_range=None
             {
                 "class": StaticNumPass,
                 "params": [{"min_num_pass": min_num_pass, "av_rate": av_rate} for min_num_pass in min_num_pass_range for
-                           av_rate in av_rate_range]
+                           av_rate in av_rate_range if av_rate > 0]
             },
         # "StaticNumPassFL":
         #     {
         #         "class": StaticNumPassFL,
-        #         "params": [{"min_num_pass": min_num_pass, "av_rate": av_rate} for min_num_pass in min_num_pass_range for av_rate in av_rate_range]
+        #         "params": [{"min_num_pass": min_num_pass, "av_rate": av_rate} for min_num_pass in min_num_pass_range
+        #         for av_rate in av_rate_range if av_rate > 0]
         #     },
         # "NothingSplit":
         #     {
@@ -40,7 +41,8 @@ def create_policy_definitions(min_num_pass_range=range(1, 6), av_rate_range=None
         # "StaticNumPassSplit":
         #     {
         #         "class": StaticNumPassSplit,
-        #         "params": [{"min_num_pass": min_num_pass, "av_rate": av_rate} for min_num_pass in min_num_pass_range for av_rate in av_rate_range]
+        #         "params": [{"min_num_pass": min_num_pass, "av_rate": av_rate} for min_num_pass in min_num_pass_range
+        #         for av_rate in av_rate_range if av_rate > 0]
         #     }
         #
     }

@@ -37,7 +37,7 @@ def simulate(args, logger=None):
 
 
 def main(args):
-    DEMAND_DEFINITIONS = create_demand_definitions(av_rate_range=([args.av_rate] if args.av_rate else None))
+    DEMAND_DEFINITIONS = create_demand_definitions(av_rate_range=args.av_rate)
     if args.demand:
         demand_instances = [DEMAND_DEFINITIONS[args.demand]["class"](**params) for params in
                             DEMAND_DEFINITIONS[args.demand]["params"]]
@@ -47,7 +47,7 @@ def main(args):
     num_exps = args.num_experiments
     np.random.seed(args.seed)
     seeds = [np.random.randint(0, 10000) for _ in range(num_exps)]
-    POLICY_DEFINITIONS = create_policy_definitions(av_rate_range=([args.av_rate] if args.av_rate else None))
+    POLICY_DEFINITIONS = create_policy_definitions(av_rate_range=args.av_rate)
     if args.policy:
         policy_instances = [POLICY_DEFINITIONS[args.policy]["class"](**params) for params in
                             POLICY_DEFINITIONS[args.policy]["params"]]

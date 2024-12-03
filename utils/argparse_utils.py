@@ -1,6 +1,6 @@
 import argparse
 import os
-
+import numpy as np
 # from Policies import static_step_handle_functions
 
 def str2bool(v):
@@ -23,13 +23,21 @@ def get_args():
                         help='Number of processes to run in parallel, None=All available cores')
     parser.add_argument("-p", "--policy", type=str, default=None, help='Policy to run, None=all policies')
     parser.add_argument("-d", "--demand", type=str, default="DemandToy", help='Demand to run, None=all demands')
-    parser.add_argument("-av", "--av_rate", type=float, default=None, help='AV rate to run, None=all av rates')
     parser.add_argument("--net_file" , type=str, default="network_simple", help='Network file name (has to be in the SUMOconfig folder)')
     parser.add_argument("--parse_results", type=str2bool, default=True, help='Parse results')
     parser.add_argument("--gui", type=bool, default=False, help='Run with GUI')
+    parser.add_argument("--av_rate_min", type=float, default=0, help='AV rate to run, None=all av rates')
+    parser.add_argument("--av_rate_max", type=float, default=1, help='AV rate to run, None=all av rates')
+    parser.add_argument("--av_rate_step", type=float, default=0.1, help='AV rate to run, None=all av rates')
 
     args = parser.parse_args()
     assert os.path.exists(f"SUMO/SUMOconfig/{args.net_file}.net.xml"), f"Network file {args.net_file}.net.xml does not exist"
+    if args.av_rate_min is not None:
+        assert args.av_rate_max is not None, "av_rate_max has to be set if av_rate_min is set"
+        assert args.av_rate_step is not None, "av_rate_step has to be set if av_rate_min is set"
+        args.av_rate = np.arange(args.av_rate_min, args.av_rate_max+args.av_rate_step, args.av_rate_step)
+    else:
+        args.av_rate = None
     return args
 
 if __name__ == '__main__':
