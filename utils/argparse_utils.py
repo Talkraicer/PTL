@@ -29,6 +29,7 @@ def get_args():
     parser.add_argument("--av_rate_min", type=float, default=0, help='AV rate to run, None=all av rates')
     parser.add_argument("--av_rate_max", type=float, default=1, help='AV rate to run, None=all av rates')
     parser.add_argument("--av_rate_step", type=float, default=0.1, help='AV rate to run, None=all av rates')
+    parser.add_argument("--min_num_pass", type=int, default=None, help='Minimum number of passengers - for static policies')
 
     args = parser.parse_args()
     assert os.path.exists(f"SUMO/SUMOconfig/{args.net_file}.net.xml"), f"Network file {args.net_file}.net.xml does not exist"
@@ -38,6 +39,7 @@ def get_args():
         args.av_rate = np.arange(args.av_rate_min, args.av_rate_max+args.av_rate_step, args.av_rate_step)
     else:
         args.av_rate = None
+    args.min_num_pass = [args.min_num_pass] if args.min_num_pass is not None else None
     return args
 
 if __name__ == '__main__':
