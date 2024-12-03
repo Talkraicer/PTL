@@ -17,7 +17,7 @@ warnings.filterwarnings("ignore", message="API change now handles step as floati
 def simulate(args, logger=None):
     sumo, policy = args
     sumo.init_simulation(policy)  # initialize simulation
-    policy.after_init_sumo()
+    policy.after_init_sumo(sumo)
     # initialize logger:
     if logger:
         logger = logger(sumo.output_folder, policy.__str__(), sumo.get_state_dict(0).keys())
