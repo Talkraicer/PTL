@@ -7,7 +7,7 @@ import Demands.demand_profiles as demand_profiles
 from utils.argparse_utils import get_args
 from utils.class_utils import get_all_subclasses
 from Policies.policy_parameters import create_policy_definitions
-from Demands.demand_parameters import DEMAND_DEFINITIONS
+from Demands.demand_parameters import create_demand_definitions
 from results.parse_all_results import parse_all_results
 import warnings
 
@@ -37,6 +37,7 @@ def simulate(args, logger=None):
 
 
 def main(args):
+    DEMAND_DEFINITIONS = create_demand_definitions(av_rate_range=([args.av_rate] if args.av_rate else None))
     if args.demand:
         demand_instances = [DEMAND_DEFINITIONS[args.demand]["class"](**params) for params in
                             DEMAND_DEFINITIONS[args.demand]["params"]]

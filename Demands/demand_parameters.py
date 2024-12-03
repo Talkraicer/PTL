@@ -4,31 +4,37 @@ from Demands.DemandToy import *
 from Demands.PassengerDemand import *
 from numpy import arange
 
-DEMAND_DEFINITIONS = {
-    "DemandToyUniform": {
-        "class": DemandToyUniform,
-        "params": [{"amount": amount, "av_rate": av_rate}
-                   for amount in range(1000, 6000, 1000)
-                   for av_rate in arange(0, 1.1, 0.1)]
-    },
-    "DemandToy": {
-        "class": DemandToy,
-        "params": [{"amount": amount, "av_rate": av_rate}
-                   for amount in range(1000, 6000, 1000)
-                   for av_rate in arange(0, 1.1, 0.1)]
-    },
-    "PassDemand": {
-        "class": PassDemand,
-        "params": [{"amount": amount, "av_pass_factor": av_pass_factor, "av_rate": av_rate}
-                   for amount in range(1000, 6000, 1000)
-                   for av_pass_factor in arange(0, 1.1, 0.1)
-                   for av_rate in arange(0, 1.1, 0.1)]
-    },
-    "PassDemandUniform": {
-        "class": PassDemandUniform,
-        "params": [{"amount": amount, "av_rate": av_rate}
-                   for amount in range(1000, 6000, 1000)
-                   for av_rate in arange(0, 1.1, 0.1)]
-    }
 
-}
+def create_demand_definitions(av_rate_range=None):
+    if av_rate_range is None:
+        av_rate_range = arange(0.1, 1.1, 0.1)
+    veh_amount_range = range(1000, 6000, 1000)
+    pass_amount_range = range(1000, 9000, 1000)
+    return {
+        "DemandToyUniform": {
+            "class": DemandToyUniform,
+            "params": [{"amount": amount, "av_rate": av_rate}
+                       for amount in veh_amount_range
+                       for av_rate in av_rate_range]
+        },
+        "DemandToy": {
+            "class": DemandToy,
+            "params": [{"amount": amount, "av_rate": av_rate}
+                       for amount in veh_amount_range
+                       for av_rate in av_rate_range]
+        },
+        "PassDemand": {
+            "class": PassDemand,
+            "params": [{"amount": amount, "av_pass_factor": av_pass_factor, "av_rate": av_rate}
+                       for amount in pass_amount_range
+                       for av_pass_factor in arange(0, 1.1, 0.1)
+                       for av_rate in av_rate_range]
+        },
+        "PassDemandUniform": {
+            "class": PassDemandUniform,
+            "params": [{"amount": amount, "av_rate": av_rate}
+                       for amount in pass_amount_range
+                       for av_rate in av_rate_range]
+        }
+
+    }
