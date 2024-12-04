@@ -9,7 +9,7 @@ import numpy as np
 from multiprocessing import Pool
 from tqdm import tqdm
 from SUMO.netfile_utils import get_PTL_lanes
-from Demands.DemandToy import DemandToy
+from Demands.demand_parameters import create_demand_definitions
 
 
 def parse_experiment(args):
@@ -243,5 +243,8 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
 
 
 if __name__ == '__main__':
+    DEMAND_DEFINITIONS = create_demand_definitions()
     parse_all_results(output_folder=f"SUMO/outputs/network_toy",
-                      demands=[DemandToy(r) for r in DemandToy.ranges], policy="StaticNumPass_1")
+                      demands=[DEMAND_DEFINITIONS["DemandToy"]["class"](**params) for params in
+                            DEMAND_DEFINITIONS["DemandToy"]["params"]]
+                      , policy="StaticNumPass_1")
