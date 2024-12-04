@@ -18,7 +18,7 @@ def parse_experiment(args):
     return ResultsParser(exp_path, PTL_lanes=PTL_lanes)
 
 
-def get_all_results_parsers(outputs_folder, demands=None, one_av_rate=None):
+def get_all_results_parsers(outputs_folder, demands=None, one_av_rate=None, policy = None):
     demands = os.listdir(outputs_folder) if not demands else demands
 
     net_file = [f for f in os.listdir(outputs_folder) if f.endswith(".net.xml")][0]
@@ -38,6 +38,8 @@ def get_all_results_parsers(outputs_folder, demands=None, one_av_rate=None):
                 experiments = list(set(map(lambda x: "_".join(x.split(".")[0].split("_")[:-1]),
                                            os.listdir(seed_folder))))
                 for experiment in experiments:
+                    if policy and experiment != policy:
+                        continue
                     exp_path = os.path.join(seed_folder, experiment)
                     if os.path.exists(exp_path + "_ResultsParser.pkl"):
                         results_parsers.append(pickle.load(open(exp_path + "_ResultsParser.pkl", "rb")))
@@ -218,7 +220,7 @@ def create_speeds_plot(results_parsers, result_folder,
             fig.write_html(os.path.join(result_folder, "plots", output_filename))
 
 
-def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, one_av_rate=None):
+def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, one_av_rate=None,policy = None):
     if not demands:
         demands = os.listdir(output_folder)
         demands = [demand for demand in demands if os.path.isdir(os.path.join(output_folder, demand))]
@@ -227,8 +229,10 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
         demands = sorted([demand.__str__() for demand in demands])
     folder_name = "_".join(demands[0].split("_")[:-1])
     result_folder = os.path.join("results", "output_results", output_folder.split("/")[-1], folder_name)
+    if policy:
+        result_folder = os.path.join(result_folder, policy)
     os.makedirs(result_folder, exist_ok=True)
-    results_parsers = get_all_results_parsers(output_folder, demands=demands, one_av_rate=one_av_rate)
+    results_parsers = get_all_results_parsers(output_folder, demands=demands, one_av_rate=one_av_rate, policy=policy)
     metrics = ["passDelay", "totalDelay", "duration", "passDuration", "departDelay"]
     create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False, demands=demands)
     create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True, demands=demands)
@@ -240,4 +244,4 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
 
 if __name__ == '__main__':
     parse_all_results(output_folder=f"SUMO/outputs/network_toy",
-                      demands=[DemandToy(r) for r in DemandToy.ranges])
+                      demands=[DemandToy(r) for r in DemandToy.ranges], policy="StaticNumPass_1")
