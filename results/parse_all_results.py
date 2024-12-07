@@ -153,7 +153,7 @@ def create_metrics_results_tables(results_parsers, metrics, result_folder,
 
         with Pool() as pool:
             # Use imap instead of starmap for progress tracking
-            results = list(tqdm(pool.imap_unordered(process_combination, tasks), total=len(tasks)))
+            results = list(tqdm(pool.imap(process_combination, tasks), total=len(tasks)))
         for result, key in results:
             policy, demand, av_rate = key
             if vType:  # If vType was used
