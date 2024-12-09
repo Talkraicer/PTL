@@ -236,10 +236,10 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
     metrics = ["passDelay", "totalDelay", "duration", "passDuration", "departDelay"]
     # create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False, demands=demands)
     # create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True, demands=demands)
-    create_plots(results_parsers, metric="speed", PTL=True, result_folder=result_folder, demands=demands,
-                 errorbars=False)
-    create_plots(results_parsers, metric="speed", PTL=False, result_folder=result_folder, demands=demands,
-                 errorbars=False)
+    # create_plots(results_parsers, metric="speed", PTL=True, result_folder=result_folder, demands=demands,
+    #              errorbars=False)
+    # create_plots(results_parsers, metric="speed", PTL=False, result_folder=result_folder, demands=demands,
+    #              errorbars=False)
     create_plots(results_parsers, metric="num_vehs", PTL=True, result_folder=result_folder, demands=demands,
                  errorbars=False)
     create_plots(results_parsers, metric="num_vehs", PTL=False, result_folder=result_folder, demands=demands,
@@ -250,6 +250,6 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
 
 if __name__ == '__main__':
     DEMAND_DEFINITIONS = create_demand_definitions()
-    parse_all_results(output_folder=f"SUMO/outputs/network_simple_2",
+    parse_all_results(output_folder=f"SUMO/outputs/network_simple",
                       demands=[DEMAND_DEFINITIONS["DemandToy"]["class"](**params) for params in
                                DEMAND_DEFINITIONS["DemandToy"]["params"]])
