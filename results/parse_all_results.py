@@ -192,7 +192,7 @@ def create_plots(results_parsers, result_folder, metric,
                                            results_parsers))
                 if len(task_parsers) == 0:
                     continue
-                y_values = [rp.mean_metric(metric, PTL=PTL) for rp in task_parsers]
+                y_values = [rp.mean_plot_metric(metric, PTL=PTL) for rp in task_parsers]
 
                 # cut all y_values to the same length
                 min_len = min(map(len, y_values))
@@ -234,8 +234,8 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
     os.makedirs(result_folder, exist_ok=True)
     results_parsers = get_all_results_parsers(output_folder, demands=demands, one_av_rate=one_av_rate, policy=policy)
     metrics = ["passDelay", "totalDelay", "duration", "passDuration", "departDelay"]
-    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False, demands=demands)
-    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True, demands=demands)
+    # create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False, demands=demands)
+    # create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True, demands=demands)
     create_plots(results_parsers, metric="speed", PTL=True, result_folder=result_folder, demands=demands,
                  errorbars=False)
     create_plots(results_parsers, metric="speed", PTL=False, result_folder=result_folder, demands=demands,
