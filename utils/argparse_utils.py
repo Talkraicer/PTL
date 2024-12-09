@@ -42,7 +42,9 @@ def get_args():
     if args.av_rate_min is not None:
         assert args.av_rate_max is not None, "av_rate_max has to be set if av_rate_min is set"
         assert args.av_rate_step is not None, "av_rate_step has to be set if av_rate_min is set"
-        args.av_rate = np.arange(args.av_rate_min, args.av_rate_max + args.av_rate_step, args.av_rate_step)
+        av_rates = np.arange(args.av_rate_min, args.av_rate_max + args.av_rate_step, args.av_rate_step)
+        av_rates = list(set[np.round(av_rates, 2)])
+        args.av_rate = av_rates
     else:
         args.av_rate = None
     args.min_num_pass = [args.min_num_pass] if args.min_num_pass is not None else None
