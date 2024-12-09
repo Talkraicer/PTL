@@ -226,7 +226,7 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
         demands = [demand for demand in demands if os.path.isdir(os.path.join(output_folder, demand))]
         demands = sorted(demands)
     else:
-        demands = sorted([demand.__str__() for demand in demands])
+        demands = sorted(list(set([demand.__str__() for demand in demands])))
     folder_name = "_".join(demands[0].split("_")[:-1])
     result_folder = os.path.join("results", "output_results", output_folder.split("/")[-1], folder_name)
     if policy:
