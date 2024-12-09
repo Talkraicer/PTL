@@ -201,7 +201,7 @@ def create_plots(results_parsers, result_folder, metric,
 
                 mean_y_values = np.ma.mean(masked_y, axis=0)
                 mean_y_values = mean_y_values.filled(0)
-                std_y_values = np.ma.std(masked_y, axis=0)
+                std_y_values = np.ma.std(masked_y, axis=0) / np.sqrt(len(y_values)) * 1.96
                 std_y_values = std_y_values.filled(0)
                 if errorbars:
                     fig.add_trace(go.Scatter(x=list(range(len(mean_y_values))), y=mean_y_values, mode='lines',
@@ -237,13 +237,17 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
     # create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False, demands=demands)
     # create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True, demands=demands)
     create_plots(results_parsers, metric="speed", PTL=True, result_folder=result_folder, demands=demands,
-                 errorbars=False)
+                 errorbars=True)
     create_plots(results_parsers, metric="speed", PTL=False, result_folder=result_folder, demands=demands,
-                 errorbars=False)
+                 errorbars=True)
     create_plots(results_parsers, metric="num_vehs", PTL=True, result_folder=result_folder, demands=demands,
-                 errorbars=False)
+                 errorbars=True)
     create_plots(results_parsers, metric="num_vehs", PTL=False, result_folder=result_folder, demands=demands,
-                    errorbars=False)
+                    errorbars=True)
+    create_plots(results_parsers, metric="occupancy", PTL=True, result_folder=result_folder, demands=demands,
+                 errorbars=True)
+    create_plots(results_parsers, metric="occupancy", PTL=False, result_folder=result_folder, demands=demands,
+                    errorbars=True)
     if "toy" not in output_folder:
         create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, baseline=True, )
 

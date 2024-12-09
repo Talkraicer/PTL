@@ -55,7 +55,8 @@ class ResultsParser:
         df["passDelay"] = df["totalDelay"] * df["numPass"]
         df["passDuration"] = df["duration"] * df["numPass"]
         df["timeLoss"] = df["timeLoss"].astype(float)
-        return df[["id", "vType", "numPass", "duration", "totalDelay", "passDelay", "passDuration", "timeLoss","departDelay"]]
+        return df[["id", "vType", "numPass", "duration", "totalDelay", "passDelay", "passDuration", "timeLoss",
+                   "departDelay"]]
 
     def _append_all_dataframes(self, key, value):
         if key not in self.speed_df:
@@ -127,50 +128,44 @@ class ResultsParser:
             return metric_data.sum() / tripinfo["numPass"].sum()
         return metric_data.mean()
 
-    def num_vehs_PTL(self):
-        """
-        Calculate the number of vehicles in the PTL lanes
-        :return: a dictionary with the PTL lanes as keys and the number of vehicles in each lane as values
-        """
-        return self.num_vehs[self.PTL_lanes].apply(sum, axis=1)
-
-    def num_vehs_all_lanes(self):
+    def num_vehs_lanes(self, PTL=False):
         """
         Calculate the number of vehicles in all lanes
         :return: a dictionary with the lanes as keys and the number of vehicles in each lane as values
         """
+        if PTL:
+            return self.num_vehs[self.PTL_lanes].apply(sum, axis=1)
         return self.num_vehs.apply(sum, axis=1)
 
-    def mean_speed_PTL(self):
-        """
-        Calculate the mean speed of vehicles in the PTL lanes
-        :return: a dictionary with the PTL lanes as keys and the mean speed of vehicles in each lane as values
-        """
-        # multiply speed by number of vehicles in each lane
-        weighted_speed = self.speed_df[self.PTL_lanes].astype(float) * self.num_vehs[self.PTL_lanes]
-        avg_speed = weighted_speed.apply(sum, axis=1) / self.num_vehs[self.PTL_lanes].apply(sum, axis=1)
-        return avg_speed.fillna(0).values
-
-    def mean_speed_all_lanes(self):
+    def mean_speed_lanes(self, PTL=False):
         """
         Calculate the mean speed of vehicles in all lanes
         :return: a dictionary with the lanes as keys and the mean speed of vehicles in each lane as values
         """
+        speed_df = self.speed_df[self.PTL_lanes] if PTL else self.speed_df
+        num_vehs = self.num_vehs[self.PTL_lanes] if PTL else self.num_vehs
         # multiply speed by number of vehicles in each lane
-        weighted_speed = self.speed_df.astype(float) * self.num_vehs
-        avg_speed = weighted_speed.apply(sum, axis=1) / self.num_vehs.apply(sum, axis=1)
+        weighted_speed = speed_df.astype(float) * num_vehs
+        avg_speed = weighted_speed.apply(sum, axis=1) / num_vehs.apply(sum, axis=1)
         return avg_speed.fillna(0).values
 
-    def mean_plot_metric(self,metric, PTL=False):
+    def mean_occupancy_lanes(self, PTL=False):
+        """
+        Calculate the mean occupancy of vehicles in all lanes
+        :return: a dictionary with the lanes as keys and the mean occupancy of vehicles in each lane as values
+        """
+        occupancy_df = self.occupancy_df[self.PTL_lanes] if PTL else self.occupancy_df
 
+        return occupancy_df.fillna(0).mean(axis=1).values
+
+
+    def mean_plot_metric(self, metric, PTL=False):
         if metric == "speed":
-            if PTL:
-                return self.mean_speed_PTL()
-            return self.mean_speed_all_lanes()
+            return self.mean_speed_lanes(PTL)
         elif metric == "num_vehs":
-            if PTL:
-                return self.num_vehs_PTL()
-            return self.num_vehs_all_lanes()
+            return self.num_vehs_lanes(PTL)
+        elif metric == "occupancy":
+            return self.mean_occupancy_lanes(PTL)
         else:
             raise Exception("Metric not supported")
 
