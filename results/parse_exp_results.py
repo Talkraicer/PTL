@@ -161,6 +161,19 @@ class ResultsParser:
         avg_speed = weighted_speed.apply(sum, axis=1) / self.num_vehs.apply(sum, axis=1)
         return avg_speed.fillna(0).values
 
+    def mean_plot_metric(self,metric, PTL=False):
+
+        if metric == "speed":
+            if PTL:
+                return self.mean_speed_PTL()
+            return self.mean_speed_all_lanes()
+        elif metric == "num_vehs":
+            if PTL:
+                return self.num_vehs_PTL()
+            return self.num_vehs_all_lanes()
+        else:
+            raise Exception("Metric not supported")
+
 
 if __name__ == '__main__':
     tripinfo_file = "../SUMO/outputs/Test/0/0/Nothing_tripinfo.xml"

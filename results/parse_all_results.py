@@ -173,11 +173,11 @@ def create_metrics_results_tables(results_parsers, metrics, result_folder,
             .to_excel(os.path.join(result_folder, f"{df_name}.xlsx"))
 
 
-def create_speeds_plot(results_parsers, result_folder,
-                       PTL=False,
-                       demands=None, policies=None, one_av_rate=None,
-                       errorbars=True
-                       ):
+def create_plots(results_parsers, result_folder, metric,
+                 PTL=False,
+                 demands=None, policies=None, one_av_rate=None,
+                 errorbars=True
+                 ):
     demands = list(set(map(lambda x: x.demand_name, results_parsers))) if not demands else demands
     av_rates = sorted(list(set(map(lambda x: x.av_rate, results_parsers)))) if not one_av_rate else [one_av_rate]
     policies = sorted(list(set(map(lambda x: x.policy_name, results_parsers)))) if not policies else policies
@@ -192,7 +192,7 @@ def create_speeds_plot(results_parsers, result_folder,
                                            results_parsers))
                 if len(task_parsers) == 0:
                     continue
-                y_values = [rp.mean_speed_PTL() if PTL else rp.mean_speed_all_lanes() for rp in task_parsers]
+                y_values = [rp.mean_metric(metric, PTL=PTL) for rp in task_parsers]
 
                 # cut all y_values to the same length
                 min_len = min(map(len, y_values))
@@ -210,12 +210,12 @@ def create_speeds_plot(results_parsers, result_folder,
                     fig.add_trace(go.Scatter(x=list(range(len(mean_y_values))), y=mean_y_values, mode='lines',
                                              name=policy))
             fig.update_layout(
-                title=f"Speeds for {demand} demand and {av_rate} AV rate",
+                title=f"{metric} for {demand} demand and {av_rate} AV rate",
                 xaxis_title="Time",
-                yaxis_title="Speed",
+                yaxis_title=f"{metric}",
                 legend_title="Policies"
             )
-            output_filename = f"Speeds_{demand}_{av_rate}" + ("_PTL" if PTL else "") + ".html"
+            output_filename = f"{metric}_{demand}_{av_rate}" + ("_PTL" if PTL else "") + ".html"
             os.makedirs(os.path.join(result_folder, "plots"), exist_ok=True)
             fig.write_html(os.path.join(result_folder, "plots", output_filename))
 
@@ -236,15 +236,20 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
     metrics = ["passDelay", "totalDelay", "duration", "passDuration", "departDelay"]
     create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False, demands=demands)
     create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True, demands=demands)
-    create_speeds_plot(results_parsers, PTL=True, result_folder=result_folder, demands=demands, errorbars=False)
-    create_speeds_plot(results_parsers, PTL=False, result_folder=result_folder, demands=demands, errorbars=False)
+    create_plots(results_parsers, metric="speed", PTL=True, result_folder=result_folder, demands=demands,
+                 errorbars=False)
+    create_plots(results_parsers, metric="speed", PTL=False, result_folder=result_folder, demands=demands,
+                 errorbars=False)
+    create_plots(results_parsers, metric="num_vehs", PTL=True, result_folder=result_folder, demands=demands,
+                 errorbars=False)
+    create_plots(results_parsers, metric="num_vehs", PTL=False, result_folder=result_folder, demands=demands,
+                    errorbars=False)
     if "toy" not in output_folder:
         create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, baseline=True, )
 
 
 if __name__ == '__main__':
     DEMAND_DEFINITIONS = create_demand_definitions()
-    parse_all_results(output_folder=f"SUMO/outputs/network_toy",
+    parse_all_results(output_folder=f"SUMO/outputs/network_simple_2",
                       demands=[DEMAND_DEFINITIONS["DemandToy"]["class"](**params) for params in
-                               DEMAND_DEFINITIONS["DemandToy"]["params"]]
-                      , policy="StaticNumPass_1")
+                               DEMAND_DEFINITIONS["DemandToy"]["params"]])
