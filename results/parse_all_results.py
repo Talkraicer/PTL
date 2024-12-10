@@ -35,7 +35,7 @@ def get_all_results_parsers(outputs_folder, demands=None, one_av_rate=None, poli
             av_rate_folder = os.path.join(demand_folder, av_rate)
             for seed in os.listdir(av_rate_folder):
                 seed_folder = os.path.join(av_rate_folder, seed)
-                experiments = list(set(map(lambda x: "_".join(x.split(".")[0].split("_")[:-1]),
+                experiments = list(set(map(lambda x: "_".join(x.split(".xml")[0].split("_")[:-1]),
                                            os.listdir(seed_folder))))
                 for experiment in experiments:
                     if policy and experiment != policy:
