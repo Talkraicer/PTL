@@ -178,6 +178,8 @@ def create_plot(args):
     fig = go.Figure()
     for policy in policies:
         policy_parsers = list(filter(lambda x: x.policy_name == policy, task_parsers))
+        if len(policy_parsers) == 0:
+            continue
         y_values = [rp.mean_plot_metric(metric, PTL=PTL) for rp in policy_parsers]
 
         # cut all y_values to the same length
