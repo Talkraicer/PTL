@@ -16,12 +16,20 @@ def get_last_junction(network_file):
     junctions = sorted(junctions, key=lambda x: x.getShape()[0][0])
     return junctions[-1].getID()
 
-def get_first_edge_lanes(network_file):
+def get_first_edge(network_file):
     # retrive using sumolib the leftmost edge and return its number of lanes
     net = sumolib.net.readNet(network_file)
     edges = net.getEdges()
     edges = sorted(edges, key=lambda x: x.getShape()[0][0])
-    return edges[0].getLanes()
+    return edges[0]
+
+def get_first_edge_id(network_file):
+    # retrive using sumolib the leftmost edge and return its number of lanes
+    return get_first_edge(network_file).getID()
+
+def get_first_edge_lanes(network_file):
+    # retrive using sumolib the leftmost edge and return its number of lanes
+    return get_first_edge(network_file).getLanes()
 
 def get_first_edge_lanenum(network_file):
     # retrive using sumolib the leftmost edge and return its number of lanes

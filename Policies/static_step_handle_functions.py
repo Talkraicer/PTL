@@ -12,7 +12,7 @@ class StepHandleFunction:
         self.arrival_split = False
         self.av_rate = 0.0
 
-    def handle_step(self, state_dict):
+    def handle_step(self, env:SUMOAdapter):
         pass
 
     def after_init_sumo(self, env: SUMOAdapter):

@@ -37,43 +37,69 @@ class SUMOAdapter:
                                           str(self.av_rate),
                                           str(seed))
         os.makedirs(self.output_folder, exist_ok=True)
-
+        self.timestep = 0
         # put a copy of the network file in the output folder
         shutil.copyfile(self.network_file, os.path.join(curdir, output_folder, net_name, net_file))
 
-    def allow_vehicles(self, edge: str = "all", veh_types=None, min_num_pass=0):
+    def allow_vehicles(self, edge: str = None, veh_types=None, min_num_pass=0):
         if veh_types is None:
             veh_types = ["AV", "HD"]
 
-        veh_ids = traci.vehicle.getIDList() if edge == "all" else traci.edge.getLastStepVehicleIDs(edge)
+        left_edge = get_first_edge_id(self.network_file)
+        veh_ids = traci.vehicle.getIDList() if edge == "all" else \
+            traci.edge.getLastStepVehicleIDs(left_edge) if edge is None \
+                else traci.edge.getLastStepVehicleIDs(edge)
 
         for veh_id in veh_ids:
+            if traci.vehicle.getVehicleClass(veh_id) in ["bus", "private"]:
+                continue
             veh_type = traci.vehicle.getTypeID(veh_id)
             num_pass = int(veh_type.split("_")[1][0])
+            veh_type = veh_type.split("_")[0]
             if veh_type.startswith("Bus"):
                 continue
             if veh_type not in veh_types:
                 continue
             if num_pass >= min_num_pass:
                 traci.vehicle.setVehicleClass(veh_id, "private")
+                traci.vehicle.updateBestLanes(veh_id)
 
-    def get_state_dict(self, t):
-        state_dict = {"t": t}
+    def get_state_dict(self, variable=None):
+        state_dict = {}
         PTL_lane_ids = get_PTL_lanes(self.network_file)
-        state_dict["veh_ids_in_PTL"] = [veh_id for lane in PTL_lane_ids for veh_id in
-                                        traci.lane.getLastStepVehicleIDs(lane)]
-        state_dict["num_vehs_in_PTL"] = len(state_dict["veh_ids_in_PTL"])
-        # state_dict["num_total_vehs"] = len(traci.vehicle.getIDList())
-        # # get mean vehicles speed
-        # state_dict["mean_speed"] = np.mean([traci.vehicle.getSpeed(vehID) for vehID in traci.vehicle.getIDList()]) \
-        #     if state_dict["num_total_vehs"] > 0 else 0
-        state_dict["mean_speed_in_PTL"] = np.mean(
-            [traci.vehicle.getSpeed(vehID) for vehID in state_dict["veh_ids_in_PTL"]]) \
-            if state_dict["num_vehs_in_PTL"] > 0 else 0
+
+        # handle num_vehs variables
+        if variable == "num_vehs":
+            return len(traci.vehicle.getIDList())
+        elif variable == "num_vehs_ptl":
+            return len([veh_id for lane in PTL_lane_ids for veh_id in
+                        traci.lane.getLastStepVehicleIDs(lane)])
+        else:
+            state_dict["num_vehs"] = len(traci.vehicle.getIDList())
+            state_dict["veh_ids_in_PTL"] = [veh_id for lane in PTL_lane_ids for veh_id in
+                                            traci.lane.getLastStepVehicleIDs(lane)]
+            state_dict["num_vehs_ptl"] = len(state_dict["veh_ids_in_PTL"])
+
+        # handle speed varaibles
+        if variable == "speed":
+            return np.mean([traci.vehicle.getSpeed(vehID) for vehID in traci.vehicle.getIDList()]) \
+                if state_dict["num_vehs"] > 0 else 26
+        elif variable == "ptl_speed":
+            return np.mean(
+                [traci.vehicle.getSpeed(vehID) for vehID in state_dict["veh_ids_in_PTL"]]) \
+                if state_dict["num_vehs_ptl"] > 0 else 26
+        else:
+            # get mean vehicles speed
+            state_dict["speed"] = np.mean([traci.vehicle.getSpeed(vehID) for vehID in traci.vehicle.getIDList()]) \
+                if state_dict["num_vehs"] > 0 else 26
+            state_dict["ptl_speed"] = np.mean(
+                [traci.vehicle.getSpeed(vehID) for vehID in state_dict["veh_ids_in_PTL"]]) \
+                if state_dict["num_vehs_ptl"] > 0 else 26
 
         return state_dict
 
     def step(self, t):
+        self.timestep += 1
         traci.simulationStep(t)
 
     def isFinish(self):
@@ -83,6 +109,7 @@ class SUMOAdapter:
         traci.close()
 
     def init_simulation(self, policy):
+        self.timestep = 0
         self.policy_name = policy.__str__()
         exp_config_folder = os.path.join(self.config_folder, self.demand_profile.__str__(), str(self.seed),
                                          self.policy_name)
@@ -114,8 +141,6 @@ class SUMOAdapter:
 
         tree.write(self.additional_file)
 
-
-
     def _append_flow(self, root, hour, in_j, out_j, prob, type_dist="vehicleDist", depart_lane=None, poisson=False):
 
         flow_id = f'flow_{type_dist}_{hour}_{in_j}_{out_j}' if depart_lane is None else f'flow_{type_dist}_{hour}_{in_j}_{out_j}_{depart_lane}'
@@ -136,7 +161,7 @@ class SUMOAdapter:
         tree = ET.parse(self.route_template)
         root = tree.getroot()
 
-        create_vType_dist(root, veh_kinds, min_num_pass,self.av_rate, self.demand_profile, endToEnd)
+        create_vType_dist(root, veh_kinds, min_num_pass, self.av_rate, self.demand_profile, endToEnd)
 
         in_junc = get_first_junction(self.network_file)
         out_junc = get_last_junction(self.network_file)
@@ -169,7 +194,7 @@ class SUMOAdapter:
                     else:
                         print(f'hour {hour} in_ramp {in_ramp} out_ramp {out_ramp} prob {flow_prob}')
                 # In ramps to Out junction
-                self._append_flow(root, hour, in_ramp, out_junc, total_arrival_prob * in_prob * left_in,poisson= True)
+                self._append_flow(root, hour, in_ramp, out_junc, total_arrival_prob * in_prob * left_in, poisson=True)
                 if total_arrival_prob * in_prob * left_in * bus_veh_prop > 0:
                     self._append_flow(root, hour, in_ramp, out_junc,
                                       total_arrival_prob * in_prob * left_in * bus_veh_prop,
@@ -179,7 +204,7 @@ class SUMOAdapter:
                 taken += out_prob
                 for lane in range(self.lane_num):
                     flow_prob = total_arrival_prob * out_prob / self.lane_num
-                    self._append_flow(root, hour, in_junc, out_ramp, flow_prob, depart_lane=lane,poisson= True)
+                    self._append_flow(root, hour, in_junc, out_ramp, flow_prob, depart_lane=lane, poisson=True)
                     if total_arrival_prob * bus_veh_prop > 0:
                         self._append_flow(root, hour, in_junc, out_ramp, flow_prob * bus_veh_prop,
                                           depart_lane=lane, type_dist="busDist")
@@ -190,7 +215,7 @@ class SUMOAdapter:
             for lane in range(self.lane_num):
                 flow_prob = total_arrival_prob * in_out_prob / self.lane_num
                 self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
-                                  type_dist="vehicleDist_endToEnd",poisson= True)
+                                  type_dist="vehicleDist_endToEnd", poisson=True)
 
                 if total_arrival_prob * bus_veh_prop > 0:
                     self._append_flow(root, hour, in_junc, out_junc, flow_prob * bus_veh_prop,

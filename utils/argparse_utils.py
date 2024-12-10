@@ -20,11 +20,11 @@ def get_args():
     parser = argparse.ArgumentParser(description='Simulation and Policy Arguments')
     parser.add_argument("-s", '--seed', type=int, default=42,
                         help='Seed for the simulation')
-    parser.add_argument("-n", "--num_experiments", type=int, default=1,
+    parser.add_argument("-n", "--num_experiments", type=int, default=10,
                         help='Number of experiments to run')
     parser.add_argument("--num_processes", type=int, default=None,
                         help='Number of processes to run in parallel, None=All available cores')
-    parser.add_argument("-p", "--policy", type=str, default=None, help='Policy to run, None=all policies')
+    parser.add_argument("-p", "--policy", type=str, default="OneVariableControl", help='Policy to run, None=all policies')
     parser.add_argument("-d", "--demand", type=str, default="DemandToy", help='Demand to run, None=all demands')
     parser.add_argument("--net_file", type=str, default="network_simple",
                         help='Network file name (has to be in the SUMOconfig folder)')
@@ -43,7 +43,7 @@ def get_args():
         assert args.av_rate_max is not None, "av_rate_max has to be set if av_rate_min is set"
         assert args.av_rate_step is not None, "av_rate_step has to be set if av_rate_min is set"
         av_rates = np.arange(args.av_rate_min, args.av_rate_max + args.av_rate_step, args.av_rate_step)
-        av_rates = list(set[np.round(av_rates, 2)])
+        av_rates = list(set(np.round(av_rates, len(str(args.av_rate_step))-2)))
         args.av_rate = av_rates
     else:
         args.av_rate = None

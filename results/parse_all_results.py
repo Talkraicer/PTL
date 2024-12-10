@@ -267,10 +267,12 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
                  errorbars=True)
     create_plots(results_parsers, metric="num_vehs", PTL=False, result_folder=result_folder, demands=demands,
                     errorbars=True)
-    create_plots(results_parsers, metric="occupancy", PTL=True, result_folder=result_folder, demands=demands,
-                 errorbars=True)
-    create_plots(results_parsers, metric="occupancy", PTL=False, result_folder=result_folder, demands=demands,
-                    errorbars=True)
+
+    # CURRENTLY NOT WORKING
+    # create_plots(results_parsers, metric="occupancy", PTL=True, result_folder=result_folder, demands=demands,
+    #              errorbars=True)
+    # create_plots(results_parsers, metric="occupancy", PTL=False, result_folder=result_folder, demands=demands,
+    #                 errorbars=True)
     if "toy" not in output_folder:
         create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, baseline=True, )
 

@@ -25,11 +25,9 @@ def simulate(args, logger=None):
     # run simulation
     t = 0
     while not sumo.isFinish():
-        # state_dict = sumo.get_state_dict(t)
-        state_dict = {"t": t}
-        policy.handle_step(state_dict)
+        policy.handle_step(sumo)
         if logger:
-            logger.log(state_dict)
+            logger.log(sumo.get_state_dict())
         sumo.step(t)
         t += 1
 
