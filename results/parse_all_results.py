@@ -173,6 +173,48 @@ def create_metrics_results_tables(results_parsers, metrics, result_folder,
             .to_excel(os.path.join(result_folder, f"{df_name}.xlsx"))
 
 
+def create_plot(args):
+    task_parsers, metric, policies, demand, av_rate, PTL, result_folder, errorbars = args
+    fig = go.Figure()
+    for policy in policies:
+        policy_parsers = list(filter(lambda x: x.policy_name == policy, task_parsers))
+        y_values = [rp.mean_plot_metric(metric, PTL=PTL) for rp in policy_parsers]
+
+        # cut all y_values to the same length
+        min_len = min(map(len, y_values))
+        y_values = np.array([y[:min_len] for y in y_values])
+        masked_y = np.ma.masked_where(y_values == 0, y_values)
+
+        # Precompute whether an axis is fully masked
+        all_masked = np.all(masked_y.mask, axis=0)
+
+        # Compute the mean only for non-fully masked axes
+        mean_y_values = np.ma.array(np.zeros(masked_y.shape[1]), mask=all_masked)  # Initialize result
+        mean_y_values[~all_masked] = np.ma.mean(masked_y[:, ~all_masked], axis=0)
+        mean_y_values = mean_y_values.filled(0)
+
+        # Compute the std only for non-fully masked axes
+        std_y_values = np.ma.array(np.zeros(masked_y.shape[1]), mask=all_masked)  # Initialize result
+        std_y_values[~all_masked] = np.ma.std(masked_y[:, ~all_masked], axis=0) / np.sqrt(len(masked_y)) * 1.96
+        std_y_values = std_y_values.filled(0)
+
+        if errorbars:
+            fig.add_trace(go.Scatter(x=list(range(len(mean_y_values))), y=mean_y_values, mode='lines',
+                                     name=policy, error_y=dict(type='data', array=std_y_values, visible=True)))
+        else:
+            fig.add_trace(go.Scatter(x=list(range(len(mean_y_values))), y=mean_y_values, mode='lines',
+                                     name=policy))
+
+    fig.update_layout(
+        title=f"{metric} for {demand} demand and {av_rate} AV rate",
+        xaxis_title="Time",
+        yaxis_title=f"{metric}",
+        legend_title="Policies"
+    )
+    output_filename = f"{metric}_{demand}_{av_rate}" + ("_PTL" if PTL else "") + ".html"
+    os.makedirs(os.path.join(result_folder, "plots"), exist_ok=True)
+    fig.write_html(os.path.join(result_folder, "plots", output_filename))
+
 def create_plots(results_parsers, result_folder, metric,
                  PTL=False,
                  demands=None, policies=None, one_av_rate=None,
@@ -182,42 +224,21 @@ def create_plots(results_parsers, result_folder, metric,
     av_rates = sorted(list(set(map(lambda x: x.av_rate, results_parsers)))) if not one_av_rate else [one_av_rate]
     policies = sorted(list(set(map(lambda x: x.policy_name, results_parsers)))) if not policies else policies
 
+    tasks = []
+
     for demand in demands:
         for av_rate in av_rates:
-            fig = go.Figure()
-            for policy in policies:
-                task_parsers = list(filter(lambda x: x.av_rate == av_rate and
-                                                     x.demand_name == demand and
-                                                     x.policy_name == policy,
-                                           results_parsers))
-                if len(task_parsers) == 0:
-                    continue
-                y_values = [rp.mean_plot_metric(metric, PTL=PTL) for rp in task_parsers]
+            task_parsers = list(filter(lambda x: x.av_rate == av_rate and
+                                                 x.demand_name == demand,
+                                       results_parsers))
+            if len(task_parsers) == 0:
+                continue
+            tasks.append((task_parsers, metric, policies, demand, av_rate, PTL, result_folder, errorbars))
 
-                # cut all y_values to the same length
-                min_len = min(map(len, y_values))
-                y_values = np.array([y[:min_len] for y in y_values])
-                masked_y = np.ma.masked_where(y_values == 0, y_values)
+    with Pool() as pool:
+        res = list(tqdm(pool.imap(create_plot, tasks), total=len(tasks)))
 
-                mean_y_values = np.ma.mean(masked_y, axis=0)
-                mean_y_values = mean_y_values.filled(0)
-                std_y_values = np.ma.std(masked_y, axis=0) / np.sqrt(len(y_values)) * 1.96
-                std_y_values = std_y_values.filled(0)
-                if errorbars:
-                    fig.add_trace(go.Scatter(x=list(range(len(mean_y_values))), y=mean_y_values, mode='lines',
-                                             name=policy, error_y=dict(type='data', array=std_y_values, visible=True)))
-                else:
-                    fig.add_trace(go.Scatter(x=list(range(len(mean_y_values))), y=mean_y_values, mode='lines',
-                                             name=policy))
-            fig.update_layout(
-                title=f"{metric} for {demand} demand and {av_rate} AV rate",
-                xaxis_title="Time",
-                yaxis_title=f"{metric}",
-                legend_title="Policies"
-            )
-            output_filename = f"{metric}_{demand}_{av_rate}" + ("_PTL" if PTL else "") + ".html"
-            os.makedirs(os.path.join(result_folder, "plots"), exist_ok=True)
-            fig.write_html(os.path.join(result_folder, "plots", output_filename))
+
 
 
 def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, one_av_rate=None, policy=None):
