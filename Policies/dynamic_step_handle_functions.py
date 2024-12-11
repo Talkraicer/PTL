@@ -39,7 +39,7 @@ class OneVariableControl(StepHandleFunction):
             self.current_min_num_pass = min(6, self.current_min_num_pass)
             self.running_sum = 0
         env.allow_vehicles(veh_types=self.veh_kinds, min_num_pass=self.current_min_num_pass)
-        print(f"Current min num pass: {self.current_min_num_pass}, timestep: {env.timestep}")
+        # print(f"Current min num pass: {self.current_min_num_pass}, timestep: {env.timestep}")
 
     def __str__(self):
         return f"OneVariableControl_{self.control_variable}_{self.min_param}_{self.max_param}_{self.decision_rate}"
