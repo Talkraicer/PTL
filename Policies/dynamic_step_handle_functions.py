@@ -18,24 +18,28 @@ class OneVariableControl(StepHandleFunction):
         self.current_min_num_pass = 1
         self.inverse = inverse
         self.decision_rate = decision_rate
+        self.running_sum = 0
 
     def handle_step(self, env: SUMOAdapter):
+        feature = env.get_state_dict(self.control_variable)
+        self.running_sum += feature
         if env.timestep % self.decision_rate == 0:
-            feature = env.get_state_dict(self.control_variable)
-            if feature < self.min_param:
+            mean_feature = self.running_sum / self.decision_rate
+            if mean_feature < self.min_param:
                 if self.inverse:
                     self.current_min_num_pass += 1
                 else:
                     self.current_min_num_pass -= 1
-            elif feature > self.max_param:
+            elif mean_feature > self.max_param:
                 if self.inverse:
                     self.current_min_num_pass -= 1
                 else:
                     self.current_min_num_pass += 1
             self.current_min_num_pass = max(1, self.current_min_num_pass)
             self.current_min_num_pass = min(6, self.current_min_num_pass)
+            self.running_sum = 0
         env.allow_vehicles(veh_types=self.veh_kinds, min_num_pass=self.current_min_num_pass)
         print(f"Current min num pass: {self.current_min_num_pass}, timestep: {env.timestep}")
 
     def __str__(self):
-        return f"OneVariableControl_{self.control_variable}_{self.min_param}_{self.max_param}"
+        return f"OneVariableControl_{self.control_variable}_{self.min_param}_{self.max_param}_{self.decision_rate}"
