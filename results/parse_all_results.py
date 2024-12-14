@@ -151,6 +151,8 @@ def create_metrics_results_tables(results_parsers, metrics, result_folder,
                                                results_parsers))
                     tasks.append((task_parsers, metric, vType, baselines, (policy, demand, av_rate)))
 
+        tasks = list(set(filter(lambda x: len(x[0]) > 0, tasks)))
+
         with Pool() as pool:
             # Use imap instead of starmap for progress tracking
             results = list(tqdm(pool.imap(process_combination, tasks), total=len(tasks)))
@@ -273,12 +275,12 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
     #              errorbars=True)
     # create_plots(results_parsers, metric="occupancy", PTL=False, result_folder=result_folder, demands=demands,
     #                 errorbars=True)
-    if "toy" not in output_folder:
-        create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, baseline=True, )
+    # if "toy" not in output_folder:
+    #     create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, baseline=True, )
 
 
 if __name__ == '__main__':
     DEMAND_DEFINITIONS = create_demand_definitions()
-    parse_all_results(output_folder=f"SUMO/outputs/network_simple",
+    parse_all_results(output_folder=f"../SUMO/outputs/network_simple",
                       demands=[DEMAND_DEFINITIONS["DemandToy"]["class"](**params) for params in
                                DEMAND_DEFINITIONS["DemandToy"]["params"]])
