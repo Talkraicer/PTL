@@ -9,7 +9,7 @@ class DailyDemand(Demand):
         self.factor = factor
         self.veh_amount = {k: int(v / factor) for k, v in self.veh_amount.items()}
         self.bus_amount = {k: int(v / factor) for k, v in self.bus_amount.items()}
-        self.toy = True
+        self.toy = False
         self.hour_len = 1800
 
     def __str__(self):

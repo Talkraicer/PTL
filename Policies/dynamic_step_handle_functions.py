@@ -2,9 +2,10 @@ from Policies.static_step_handle_functions import StepHandleFunction
 from SUMO.SUMOAdpater import SUMOAdapter
 from typing import Tuple
 
+
 class OneVariableControl(StepHandleFunction):
 
-    def __init__(self, av_rate:float,
+    def __init__(self, av_rate: float,
                  variable: str,
                  param_range: Tuple[float, float],
                  decision_rate: int,
