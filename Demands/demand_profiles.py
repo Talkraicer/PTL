@@ -35,6 +35,8 @@ class Demand:
     def __str__(self):
         raise NotImplementedError
 
+
+
 # class ScenariosDemand(Demand):
 #     def __init__(self):
 #         super().__init__()
