@@ -98,9 +98,9 @@ class SUMOAdapter:
 
         return state_dict
 
-    def step(self, t):
+    def step(self):
+        traci.simulationStep(self.timestep)
         self.timestep += 1
-        traci.simulationStep(t)
 
     def isFinish(self):
         return traci.simulation.getMinExpectedNumber() <= 0
@@ -381,6 +381,11 @@ class SUMOAdapter:
             raise Exception("please declare environment variable 'SUMO_HOME'")
         return sumo_binary
 
+    def get_num_vehs(self, edge_ID=None, lane_ID=None):
+        if edge_ID:
+            return int(traci.edge.getLastStepVehicleNumber(edge_ID))
+        elif lane_ID:
+            return int(traci.lane.getLastStepVehicleNumber(lane_ID))
 
 if __name__ == '__main__':
     adapter_daily = SUMOAdapter(DemandToy(5000), 42, 0, net_file="network_toy.net.xml")

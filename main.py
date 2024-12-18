@@ -23,13 +23,11 @@ def simulate(args, logger=None):
         logger = logger(sumo.output_folder, policy.__str__(), sumo.get_state_dict(0).keys())
 
     # run simulation
-    t = 0
     while not sumo.isFinish():
         policy.handle_step(sumo)
         if logger:
             logger.log(sumo.get_state_dict())
-        sumo.step(t)
-        t += 1
+        sumo.step()
 
     sumo.close()
 
