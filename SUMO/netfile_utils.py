@@ -16,12 +16,18 @@ def get_last_junction(network_file):
     junctions = sorted(junctions, key=lambda x: x.getShape()[0][0])
     return junctions[-1].getID()
 
-def get_first_edge(network_file):
+def get_edges(network_file):
     # retrive using sumolib the leftmost edge and return its number of lanes
     net = sumolib.net.readNet(network_file)
     edges = net.getEdges()
     edges = sorted(edges, key=lambda x: x.getShape()[0][0])
-    return edges[0]
+    return edges
+
+def get_first_edge(network_file):
+    return get_edges(network_file)[0]
+
+def get_last_edge(network_file):
+    return get_edges(network_file)[-1]
 
 def get_first_edge_id(network_file):
     # retrive using sumolib the leftmost edge and return its number of lanes
@@ -52,7 +58,11 @@ def get_PTL_lanes(network_file):
     lanes_list = [l for e in edges for l in e.getLanes()]
     return [l.getID() for l in lanes_list if is_PTL_Lane(l)]
 
+def get_lane_max_vehicles(lane):
+    return lane.getLength() // (5+2.5) # 5m for vehicle, 2.5m for gap
 
+def get_num_lanes(edge):
+    return len(edge.getLanes())
 
 if __name__ == '__main__':
     network_file = "SUMOconfig/network_crowded.net.xml"
@@ -61,3 +71,4 @@ if __name__ == '__main__':
     print(get_first_edge_lanenum(network_file))
     print(get_num_ramps(network_file))
     print(get_PTL_lanes(network_file))
+    print(get_edge_length(get_first_edge(network_file)))
