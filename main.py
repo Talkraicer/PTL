@@ -25,7 +25,7 @@ def simulate(args, logger=None):
     if policy.RL:
         env = PTLEnv(sumo)
         policy.after_init_sumo(env)
-        policy.agent.learn(total_timesteps=5)
+        policy.agent.learn(total_timesteps=600000//policy.act_rate)
         env.save_policy()
     else:
         policy.after_init_sumo(sumo)

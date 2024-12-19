@@ -107,6 +107,6 @@ class PTLEnv(gym.Env):
         return max(min_value, min(value, max_value))
 
     def save_policy(self):
-        path = os.path.join("agents", self.sumo.demand_profile.__str__(), self.policy.__str__())
+        path = os.path.join("agents", self.sumo.demand_profile.__str__())
         os.makedirs(path, exist_ok=True)
         self.policy.save(path)
