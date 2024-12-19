@@ -1,5 +1,6 @@
 from Policies.static_step_handle_functions import *
 from Policies.dynamic_step_handle_functions import *
+from Policies.RL_step_handle_function import *
 from numpy import arange
 
 
@@ -68,6 +69,7 @@ def create_policy_definitions(min_num_pass_range=None, av_rate_range=None):
                               for av_rate in av_rate_range if av_rate > 0
                               for rate in [10, 60]
                          ]
+
                 # [
                 #     {"variable": "occupancy", "param_range": param_range} for param_range in
                 #     [(0, 1), (0, 0.5), (0.5, 1)]
@@ -77,6 +79,14 @@ def create_policy_definitions(min_num_pass_range=None, av_rate_range=None):
                 #     [(0, 1), (0, 0.5), (0.5, 1)]
                 # ]
             },
+        "RLAgent":
+            {
+                "class": RLAgent,
+                "params": [{"av_rate": 0.1, "act_rate": act_rate, "agent_type": agent_type
+                            }
+                           for act_rate in [3, 10, 60]
+                            for agent_type in ["DQN", "PPO", "A2C"]]
+            }
 
         # "StaticNumPassFL":
         #     {

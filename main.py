@@ -1,3 +1,5 @@
+import os
+import pickle
 from multiprocessing.pool import Pool
 from tqdm import tqdm
 import numpy as np
@@ -10,24 +12,29 @@ from Policies.policy_parameters import create_policy_definitions
 from Demands.demand_parameters import create_demand_definitions
 from results.parse_all_results import parse_all_results
 import warnings
-
+from env.PTLenv import PTLEnv
 warnings.filterwarnings("ignore", message="API change now handles step as floating point seconds")
 
 
 def simulate(args, logger=None):
     sumo, policy = args
     sumo.init_simulation(policy)  # initialize simulation
-    policy.after_init_sumo(sumo)
     # initialize logger:
     if logger:
         logger = logger(sumo.output_folder, policy.__str__(), sumo.get_state_dict(0).keys())
-
-    # run simulation
-    while not sumo.isFinish():
-        policy.handle_step(sumo)
-        if logger:
-            logger.log(sumo.get_state_dict())
-        sumo.step()
+    if policy.RL:
+        env = PTLEnv(sumo)
+        policy.after_init_sumo(env)
+        policy.agent.learn(total_timesteps=5)
+        env.save_policy()
+    else:
+        policy.after_init_sumo(sumo)
+        # run simulation
+        while not sumo.isFinish():
+            policy.handle_step(sumo)
+            if logger:
+                logger.log(sumo.get_state_dict())
+            sumo.step()
 
     sumo.close()
 

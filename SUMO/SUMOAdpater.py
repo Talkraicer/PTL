@@ -382,10 +382,29 @@ class SUMOAdapter:
         return sumo_binary
 
     def get_num_vehs(self, edge_ID=None, lane_ID=None):
+        # return a tuple of (HD,AV,ALLOWED) num of vehicles
         if edge_ID:
-            return int(traci.edge.getLastStepVehicleNumber(edge_ID))
-        elif lane_ID:
-            return int(traci.lane.getLastStepVehicleNumber(lane_ID))
+            veh_ids = traci.edge.getLastStepVehicleIDs(edge_ID)
+        else:
+            veh_ids = traci.lane.getLastStepVehicleIDs(lane_ID)
+        num_hd, num_av, num_allowed = 0, 0, 0
+        for veh_id in veh_ids:
+            veh_class = traci.vehicle.getVehicleClass(veh_id)
+            if veh_class in ["bus", "private"]:
+                num_allowed += 1
+            elif veh_class == "evehicle":
+                num_av += 1
+            else:
+                num_hd += 1
+        return num_hd, num_av, num_allowed
+
+    def get_num_pass(self, edgeID=None, laneID=None):
+        veh_ids = traci.edge.getLastStepVehicleIDs(edgeID) if edgeID else traci.lane.getLastStepVehicleIDs(laneID)
+        num_pass = 0
+        for veh_id in veh_ids:
+            num_pass += int(traci.vehicle.getTypeID(veh_id).split("_")[1][0])
+        return num_pass
+
 
 if __name__ == '__main__':
     adapter_daily = SUMOAdapter(DemandToy(5000), 42, 0, net_file="network_toy.net.xml")

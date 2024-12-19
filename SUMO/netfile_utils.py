@@ -59,7 +59,7 @@ def get_PTL_lanes(network_file):
     return [l.getID() for l in lanes_list if is_PTL_Lane(l)]
 
 def get_lane_max_vehicles(lane):
-    return lane.getLength() // (5+2.5) # 5m for vehicle, 2.5m for gap
+    return int(lane.getLength() // (5+2.5)) # 5m for vehicle, 2.5m for gap
 
 def get_num_lanes(edge):
     return len(edge.getLanes())

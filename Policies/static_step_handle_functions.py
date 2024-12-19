@@ -11,6 +11,7 @@ class StepHandleFunction:
         self.endToEnd = False
         self.arrival_split = False
         self.av_rate = 0.0
+        self.RL = False
 
     def handle_step(self, env:SUMOAdapter):
         pass
