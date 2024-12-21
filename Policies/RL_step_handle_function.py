@@ -1,3 +1,5 @@
+import os
+
 from stable_baselines3 import DQN, PPO, A2C
 from Policies.static_step_handle_functions import StepHandleFunction
 from env.PTLenv import PTLEnv
@@ -30,4 +32,4 @@ class RLAgent(StepHandleFunction):
         return f"{self.agent_type}_{self.act_rate}"
 
     def save(self, path):
-        self.agent.save(path)
+        self.agent.save(os.path.join(path, f"{self.agent_type}_{self.act_rate}"))

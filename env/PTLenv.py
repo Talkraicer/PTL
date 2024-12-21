@@ -7,6 +7,7 @@ from collections import OrderedDict
 from SUMO.SUMOAdpater import SUMOAdapter
 from SUMO.netfile_utils import *
 from Policies.static_step_handle_functions import StaticNumPass
+
 NUM_ACTIONS = 3
 
 
@@ -37,7 +38,7 @@ class PTLEnv(gym.Env):
 
         # update state from SUMO
         for lane in self.state_lanes:
-            HD,AV,ALLOWED = self.sumo.get_num_vehs(lane_ID=lane.getID())
+            HD, AV, ALLOWED = self.sumo.get_num_vehs(lane_ID=lane.getID())
             self.state[f"{lane.getID()}_HD"] = HD
             self.state[f"{lane.getID()}_AV"] = AV
             self.state[f"{lane.getID()}_ALLOWED"] = ALLOWED
@@ -69,9 +70,8 @@ class PTLEnv(gym.Env):
 
         # init SUMO
         self.sumo.seed = seed if seed is not None else np.random.randint(0, 10000)
-        self.sumo.av_rate = np.random.randint(1,11) / 10.0
+        self.sumo.av_rate = np.random.randint(1, 11) / 10.0
         self.sumo.init_simulation(self.policy)
-
 
         return self.state, {}
 
