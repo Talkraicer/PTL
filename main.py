@@ -37,10 +37,11 @@ def simulate(args, logger=None):
             agent_path = os.path.join("agents", env.sumo.demand_profile.__str__(), policy.__str__() + ".zip")
             policy.agent = eval(policy.agent_type).load(agent_path)
 
-            while not sumo.isFinish():
+            while not env.isFinish():
                 policy.handle_step(env)
                 if logger:
                     logger.log(sumo.get_state_dict())
+            env.close()
     else:
         policy.after_init_sumo(sumo)
         # run simulation
@@ -49,8 +50,7 @@ def simulate(args, logger=None):
             if logger:
                 logger.log(sumo.get_state_dict())
             sumo.step()
-
-    sumo.close()
+        sumo.close()
 
 
 def main(args):

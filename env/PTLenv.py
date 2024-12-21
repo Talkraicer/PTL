@@ -113,3 +113,6 @@ class PTLEnv(gym.Env):
         path = os.path.join("agents", self.sumo.demand_profile.__str__())
         os.makedirs(path, exist_ok=True)
         self.policy.save(path)
+
+    def isFinish(self):
+        return self.sumo.isFinish()
