@@ -12,7 +12,7 @@ NUM_ACTIONS = 3
 
 
 class PTLEnv(gym.Env):
-    def __init__(self, sumo: SUMOAdapter):
+    def __init__(self, sumo: SUMOAdapter, train: bool = True):
         self.sumo = sumo
         self.state_lanes = None
         self.target_lanes = None
@@ -25,6 +25,7 @@ class PTLEnv(gym.Env):
         self.current_min_num_pass = 1
         self.act_rate = 0
         self.policy = None
+        self.train = train
 
     def step(self, action):
 
@@ -70,9 +71,10 @@ class PTLEnv(gym.Env):
         self.state["current_min_num_pass"] = self.current_min_num_pass
 
         # init SUMO
-        self.sumo.seed = seed if seed is not None else np.random.randint(0, 10000)
-        self.sumo.av_rate = np.random.randint(1, 11) / 10.0
-        self.sumo.init_simulation(self.policy)
+        if self.train:
+            self.sumo.seed = seed if seed is not None else np.random.randint(0, 10000)
+            self.sumo.av_rate = np.random.randint(1, 11) / 10.0
+        self.sumo.init_simulation(self.policy,)
 
         return self.state, {}
 

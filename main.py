@@ -19,7 +19,6 @@ warnings.filterwarnings("ignore", message="API change now handles step as floati
 
 def simulate(args, logger=None):
     sumo, policy, train = args
-    sumo.init_simulation(policy)  # initialize simulation
     # initialize logger:
     if logger:
         logger = logger(sumo.output_folder, policy.__str__(), sumo.get_state_dict(0).keys())
@@ -30,16 +29,17 @@ def simulate(args, logger=None):
             policy.agent.learn(total_timesteps=600000 // policy.act_rate)
             env.save_policy()
         else:
-            env = PTLEnv(sumo)
+            env = PTLEnv(sumo, train=False)
             policy.after_init_sumo(env)
-            policy.agent.load(os.path.join("agents", env.sumo.demand_profile.__str__(), policy.__str__() + ".zip"))
+            agent_path = os.path.join("agents", env.sumo.demand_profile.__str__(), policy.__str__() + ".zip")
+            policy.agent = eval(policy.agent_type).load(agent_path)
 
             while not sumo.isFinish():
                 policy.handle_step(env)
                 if logger:
                     logger.log(sumo.get_state_dict())
-                sumo.step()
     else:
+        sumo.init_simulation(policy)  # initialize simulation
         policy.after_init_sumo(sumo)
         # run simulation
         while not sumo.isFinish():
