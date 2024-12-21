@@ -2,6 +2,7 @@ import os
 
 from stable_baselines3 import DQN, PPO, A2C
 from Policies.static_step_handle_functions import StepHandleFunction
+from SUMO.SUMOAdpater import SUMOAdapter
 from env.PTLenv import PTLEnv
 
 
@@ -10,7 +11,7 @@ class RLAgent(StepHandleFunction):
                  av_rate: float = 0.1,
                  act_rate: int = 10,
                  agent_type: str = "DQN",
-                 policy_type: str = "MultiInputPolicy",):
+                 policy_type: str = "MultiInputPolicy", ):
         super().__init__()
         assert agent_type in ["DQN", "PPO", "A2C"]
         self.agent_type = agent_type
@@ -23,10 +24,12 @@ class RLAgent(StepHandleFunction):
         self.policy_type = policy_type
         self.av_rate = av_rate
 
-
     def after_init_sumo(self, env: PTLEnv):
         self.agent = eval(self.agent_type)(self.policy_type, env, verbose=1)
         env.policy = self
+
+    def handle_step(self, env: PTLEnv):
+        env.step(self.agent.predict(env.state, deterministic=True)[0])
 
     def __str__(self):
         return f"{self.agent_type}_{self.act_rate}"

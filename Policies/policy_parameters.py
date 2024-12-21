@@ -4,12 +4,12 @@ from Policies.RL_step_handle_function import *
 from numpy import arange
 
 
-def create_policy_definitions(min_num_pass_range=None, av_rate_range=None):
+def create_policy_definitions(min_num_pass_range=None, av_rate_range=None, train=False):
     if av_rate_range is None:
         av_rate_range = arange(0, 1.1, 0.1)
     if min_num_pass_range is None:
         min_num_pass_range = [1, 2, 3, 4, 5]
-
+    RL_av_rate_range = [0.1] if train else av_rate_range
     return {
         "Nothing":
             {
@@ -82,8 +82,9 @@ def create_policy_definitions(min_num_pass_range=None, av_rate_range=None):
         "RLAgent":
             {
                 "class": RLAgent,
-                "params": [{"av_rate": 0.1, "act_rate": act_rate, "agent_type": agent_type
+                "params": [{"av_rate": av_rate, "act_rate": act_rate, "agent_type": agent_type
                             }
+                           for av_rate in RL_av_rate_range if av_rate > 0
                            for act_rate in [3, 10, 60]
                             for agent_type in ["DQN", "PPO", "A2C"]]
             }

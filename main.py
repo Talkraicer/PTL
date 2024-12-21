@@ -13,20 +13,32 @@ from Demands.demand_parameters import create_demand_definitions
 from results.parse_all_results import parse_all_results
 import warnings
 from env.PTLenv import PTLEnv
+
 warnings.filterwarnings("ignore", message="API change now handles step as floating point seconds")
 
 
 def simulate(args, logger=None):
-    sumo, policy = args
+    sumo, policy, train = args
     sumo.init_simulation(policy)  # initialize simulation
     # initialize logger:
     if logger:
         logger = logger(sumo.output_folder, policy.__str__(), sumo.get_state_dict(0).keys())
     if policy.RL:
-        env = PTLEnv(sumo)
-        policy.after_init_sumo(env)
-        policy.agent.learn(total_timesteps=600000//policy.act_rate)
-        env.save_policy()
+        if train:
+            env = PTLEnv(sumo)
+            policy.after_init_sumo(env)
+            policy.agent.learn(total_timesteps=600000 // policy.act_rate)
+            env.save_policy()
+        else:
+            env = PTLEnv(sumo)
+            policy.after_init_sumo(env)
+            policy.agent.load(os.path.join("agents", env.sumo.demand_profile.__str__(), policy.__str__() + ".zip"))
+
+            while not sumo.isFinish():
+                policy.handle_step(env)
+                if logger:
+                    logger.log(sumo.get_state_dict())
+                sumo.step()
     else:
         policy.after_init_sumo(sumo)
         # run simulation
@@ -50,7 +62,8 @@ def main(args):
     num_exps = args.num_experiments
     np.random.seed(args.seed)
     seeds = [np.random.randint(0, 10000) for _ in range(num_exps)]
-    POLICY_DEFINITIONS = create_policy_definitions(av_rate_range=args.av_rate, min_num_pass_range=args.min_num_pass)
+    POLICY_DEFINITIONS = create_policy_definitions(av_rate_range=args.av_rate, min_num_pass_range=args.min_num_pass,
+                                                   train = args.train)
     if args.policy:
         policy_instances = [POLICY_DEFINITIONS[args.policy]["class"](**params) for params in
                             POLICY_DEFINITIONS[args.policy]["params"]]
@@ -67,7 +80,7 @@ def main(args):
                     continue
                 sumo = SUMOAdapter(demand, seed, net_file=net_file,
                                    gui=args.gui)
-                simulation_args.append((sumo, policy))
+                simulation_args.append((sumo, policy, args.train))
     num_processes = args.num_processes if not args.gui else 1
     with Pool(num_processes) as pool:
         list(tqdm(pool.imap(simulate, simulation_args), total=len(simulation_args)))
