@@ -27,8 +27,7 @@ class PTLEnv(gym.Env):
         self.policy = None
 
     def step(self, action):
-        if action != 0:
-            print("blat")
+
         self.current_min_num_pass = self._clamp(self.current_min_num_pass + self.action_mapping[action], 1, 6)
 
         reward = 0
