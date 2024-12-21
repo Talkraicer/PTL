@@ -37,6 +37,7 @@ def simulate(args, logger=None):
             agent_path = os.path.join("agents", env.sumo.demand_profile.__str__(), policy.__str__() + ".zip")
             policy.agent = eval(policy.agent_type).load(agent_path)
 
+            env.reset()
             while not env.isFinish():
                 policy.handle_step(env)
                 if logger:
