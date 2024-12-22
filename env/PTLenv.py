@@ -28,7 +28,6 @@ class PTLEnv(gym.Env):
         self.train = train
 
     def step(self, action):
-
         self.current_min_num_pass = self._clamp(self.current_min_num_pass + self.action_mapping[action], 1, 6)
 
         reward = 0
@@ -65,7 +64,7 @@ class PTLEnv(gym.Env):
             pass
 
         # reset the state
-        self.current_min_num_pass = 1
+        self.current_min_num_pass = 6  # NEVER CHANGE !!!
         for k in self.state.keys():
             self.state[k] = np.array([0.0])
         self.state["current_min_num_pass"] = self.current_min_num_pass

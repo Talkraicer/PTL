@@ -18,7 +18,7 @@ class RLAgent(StepHandleFunction):
         self.RL = True
         self.act_rate = act_rate
         self.veh_kinds = ["AV"]
-        self.min_num_pass = 1
+        self.min_num_pass = 6   # NEVER CHANGE
         self.endToEnd = False
         self.agent = None
         self.policy_type = policy_type

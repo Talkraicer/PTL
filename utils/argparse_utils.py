@@ -29,13 +29,13 @@ def get_args():
     parser.add_argument("--net_file", type=str, default="network_simple",
                         help='Network file name (has to be in the SUMOconfig folder)')
     parser.add_argument("--parse_results", type=str2bool, default=True, help='Parse results')
-    parser.add_argument("--gui", type=bool, default=False, help='Run with GUI')
+    parser.add_argument("--gui", type=bool, default=True, help='Run with GUI')
     parser.add_argument("--av_rate_min", type=float, default=0, help='AV rate to run, None=all av rates')
     parser.add_argument("--av_rate_max", type=float, default=1, help='AV rate to run, None=all av rates')
     parser.add_argument("--av_rate_step", type=float, default=0.1, help='AV rate to run, None=all av rates')
     parser.add_argument("--min_num_pass", type=int, default=None,
                         help='Minimum number of passengers - for static policies')
-    parser.add_argument("-t","--train", type=str2bool, default=False, help='Train the RL agent')
+    parser.add_argument("-t","--train", type=str2bool, default=True, help='Train the RL agent')
 
     args = parser.parse_args()
     assert os.path.exists(
