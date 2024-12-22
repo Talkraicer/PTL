@@ -67,7 +67,7 @@ class PTLEnv(gym.Env):
         # reset the state
         self.current_min_num_pass = 1
         for k in self.state.keys():
-            self.state[k] = 0
+            self.state[k] = 0.0
         self.state["current_min_num_pass"] = self.current_min_num_pass
 
         # init SUMO

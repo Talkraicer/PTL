@@ -48,6 +48,8 @@ def get_args():
         args.av_rate = av_rates
     else:
         args.av_rate = None
+    if args.train:
+        args.parse_results = False
     args.min_num_pass = [args.min_num_pass] if args.min_num_pass is not None else None
     return args
 
