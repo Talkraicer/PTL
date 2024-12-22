@@ -52,9 +52,6 @@ class PTLEnv(gym.Env):
         if action != 1:
             self.state["time_since_change"] = self.act_rate
 
-        for k in self.state.keys():
-            if self.state[k] >= self.observation_space[k].n:
-                self.state[k] = self.observation_space[k].n - 1
         done = self.sumo.isFinish()
 
         return self.state, reward, done, False, {}
