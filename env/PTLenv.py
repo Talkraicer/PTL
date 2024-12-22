@@ -38,14 +38,17 @@ class PTLEnv(gym.Env):
             for lane in self.target_lanes:
                 reward += self.sumo.get_num_pass(laneID=lane.getID())
 
+        reward /= self.act_rate*sum([get_lane_max_vehicles(lane) * 5 for lane in self.target_lanes])
+
         # update state from SUMO
         for lane in self.state_lanes:
+            max_vehicles = get_lane_max_vehicles(lane)
             HD, AV, ALLOWED = self.sumo.get_num_vehs(lane_ID=lane.getID())
-            self.state[f"{lane.getID()}_HD"] = HD
-            self.state[f"{lane.getID()}_AV"] = AV
-            self.state[f"{lane.getID()}_ALLOWED"] = ALLOWED
+            self.state[f"{lane.getID()}_HD"] = HD / max_vehicles
+            self.state[f"{lane.getID()}_AV"] = AV / max_vehicles
+            self.state[f"{lane.getID()}_ALLOWED"] = ALLOWED / max_vehicles
         self.state["current_min_num_pass"] = self.current_min_num_pass
-        self.state["time_since_change"] += self.act_rate
+        self.state["time_since_change"] += self.act_rate / 15000
         if action != 1:
             self.state["time_since_change"] = self.act_rate
 
@@ -94,14 +97,13 @@ class PTLEnv(gym.Env):
         obs_dict = OrderedDict()
         for lane in self.state_lanes:
             lane_id = lane.getID()
-            max_vehicles = get_lane_max_vehicles(lane)
-            obs_dict[f"{lane_id}_HD"] = gym.spaces.Discrete(max_vehicles)
-            obs_dict[f"{lane_id}_AV"] = gym.spaces.Discrete(max_vehicles)
-            obs_dict[f"{lane_id}_ALLOWED"] = gym.spaces.Discrete(max_vehicles)
+            obs_dict[f"{lane_id}_HD"] = gym.spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32)
+            obs_dict[f"{lane_id}_AV"] = gym.spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32)
+            obs_dict[f"{lane_id}_ALLOWED"] = gym.spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32)
 
         # Add additional observation keys
         obs_dict["current_min_num_pass"] = gym.spaces.Discrete(7)
-        obs_dict["time_since_change"] = gym.spaces.Discrete(15000)
+        obs_dict["time_since_change"] = gym.spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32)
 
         # Ensure Dict is created with an OrderedDict
         return gym.spaces.Dict(obs_dict)
