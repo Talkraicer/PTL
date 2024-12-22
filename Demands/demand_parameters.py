@@ -40,7 +40,7 @@ def create_demand_definitions(av_rate_range=None):
         "DailyDemand": {
             "class": DailyDemand,
             "params": [{"factor": factor, "av_rate": av_rate}
-                       for factor in [2,2.5,3]
+                       for factor in [3]
                        for av_rate in av_rate_range]
         }
 

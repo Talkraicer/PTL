@@ -5,15 +5,12 @@ from tqdm import tqdm
 import numpy as np
 
 from SUMO.SUMOAdpater import SUMOAdapter
-import Demands.demand_profiles as demand_profiles
 from utils.argparse_utils import get_args
-from utils.class_utils import get_all_subclasses
 from Policies.policy_parameters import create_policy_definitions
 from Demands.demand_parameters import create_demand_definitions
 from results.parse_all_results import parse_all_results
 import warnings
 from env.PTLenv import PTLEnv
-from stable_baselines3 import DQN, PPO, A2C
 
 warnings.filterwarnings("ignore", message="API change now handles step as floating point seconds")
 
@@ -29,13 +26,13 @@ def simulate(args, logger=None):
         if train:
             env = PTLEnv(sumo)
             policy.after_init_sumo(env)
-            policy.agent.learn(total_timesteps=600000 // policy.act_rate)
+            policy.agent.learn(total_timesteps=10**6 // policy.act_rate)
             env.save_policy()
         else:
             env = PTLEnv(sumo, train=False)
             policy.after_init_sumo(env)
             agent_path = os.path.join("agents", env.sumo.demand_profile.__str__(), policy.__str__() + ".zip")
-            policy.agent = eval(policy.agent_type).load(agent_path)
+            policy.agent = policy.agent.load(agent_path)
 
             env.reset()
             while not env.isFinish():
