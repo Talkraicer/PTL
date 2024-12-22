@@ -22,7 +22,7 @@ def get_args():
                         help='Seed for the simulation')
     parser.add_argument("-n", "--num_experiments", type=int, default=1,
                         help='Number of experiments to run')
-    parser.add_argument("--num_processes", type=int, default=None,
+    parser.add_argument("--num_processes", type=int, default=1,
                         help='Number of processes to run in parallel, None=All available cores')
     parser.add_argument("-p", "--policy", type=str, default="RLAgent", help='Policy to run, None=all policies')
     parser.add_argument("-d", "--demand", type=str, default="DailyDemand", help='Demand to run, None=all demands')
@@ -35,7 +35,7 @@ def get_args():
     parser.add_argument("--av_rate_step", type=float, default=0.1, help='AV rate to run, None=all av rates')
     parser.add_argument("--min_num_pass", type=int, default=None,
                         help='Minimum number of passengers - for static policies')
-    parser.add_argument("-t","--train", type=str2bool, default=True, help='Train the RL agent')
+    parser.add_argument("-t","--train", type=str2bool, default=False, help='Train the RL agent')
 
     args = parser.parse_args()
     assert os.path.exists(
