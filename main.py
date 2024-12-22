@@ -33,6 +33,7 @@ def simulate(args, logger=None):
             policy.after_init_sumo(env)
             agent_path = os.path.join("agents", env.sumo.demand_profile.__str__(), policy.__str__() + ".zip")
             policy.agent = policy.agent.load(agent_path)
+            policy.agent.set_env(env)
 
             env.reset()
             while not env.isFinish():
