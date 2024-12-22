@@ -29,7 +29,7 @@ class PTLEnv(gym.Env):
 
     def step(self, action):
 
-        self.current_min_num_pass = self._clamp(self.current_min_num_pass + self.action_mapping[action], 1, 6)
+        self.current_min_num_pass = np.clip(self.current_min_num_pass + self.action_mapping[action], 1, 6)
 
         reward = 0
         for _ in range(self.act_rate):
@@ -105,8 +105,6 @@ class PTLEnv(gym.Env):
         # Ensure Dict is created with an OrderedDict
         return gym.spaces.Dict(obs_dict)
 
-    def _clamp(self, value, min_value, max_value):
-        return max(min_value, min(value, max_value))
 
     def save_policy(self):
         path = os.path.join("agents", self.sumo.demand_profile.__str__())
