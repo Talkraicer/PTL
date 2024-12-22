@@ -29,7 +29,7 @@ class PTLEnv(gym.Env):
 
     def step(self, action):
 
-        self.current_min_num_pass = self._clamp(self.current_min_num_pass + self.action_mapping[action], 1, 7)
+        self.current_min_num_pass = self._clamp(self.current_min_num_pass + self.action_mapping[action], 1, 6)
 
         reward = 0
         for _ in range(self.act_rate):
