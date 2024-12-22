@@ -44,13 +44,13 @@ class PTLEnv(gym.Env):
         for lane in self.state_lanes:
             max_vehicles = get_lane_max_vehicles(lane)
             HD, AV, ALLOWED = self.sumo.get_num_vehs(lane_ID=lane.getID())
-            self.state[f"{lane.getID()}_HD"] = HD / max_vehicles
-            self.state[f"{lane.getID()}_AV"] = AV / max_vehicles
-            self.state[f"{lane.getID()}_ALLOWED"] = ALLOWED / max_vehicles
+            self.state[f"{lane.getID()}_HD"] = np.array(HD / max_vehicles)
+            self.state[f"{lane.getID()}_AV"] = np.array(AV / max_vehicles)
+            self.state[f"{lane.getID()}_ALLOWED"] = np.array(ALLOWED / max_vehicles)
         self.state["current_min_num_pass"] = self.current_min_num_pass
-        self.state["time_since_change"] += self.act_rate / 15000
+        self.state["time_since_change"] += np.array(self.act_rate / 15000)
         if action != 1:
-            self.state["time_since_change"] = self.act_rate
+            self.state["time_since_change"] = np.array(self.act_rate)
 
         done = self.sumo.isFinish()
 
