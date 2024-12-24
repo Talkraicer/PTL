@@ -20,11 +20,11 @@ def get_args():
     parser = argparse.ArgumentParser(description='Simulation and Policy Arguments')
     parser.add_argument("-s", '--seed', type=int, default=42,
                         help='Seed for the simulation')
-    parser.add_argument("-n", "--num_experiments", type=int, default=1,
+    parser.add_argument("-n", "--num_experiments", type=int, default=10,
                         help='Number of experiments to run')
     parser.add_argument("--num_processes", type=int, default=None,
                         help='Number of processes to run in parallel, None=All available cores')
-    parser.add_argument("-p", "--policy", type=str, default="RLAgent", help='Policy to run, None=all policies')
+    parser.add_argument("-p", "--policy", type=str, default="OneVariableControl", help='Policy to run, None=all policies')
     parser.add_argument("-d", "--demand", type=str, default="DailyDemand", help='Demand to run, None=all demands')
     parser.add_argument("--net_file", type=str, default="network_simple",
                         help='Network file name (has to be in the SUMOconfig folder)')
@@ -35,7 +35,7 @@ def get_args():
     parser.add_argument("--av_rate_step", type=float, default=0.1, help='AV rate to run, None=all av rates')
     parser.add_argument("--min_num_pass", type=int, default=None,
                         help='Minimum number of passengers - for static policies')
-    parser.add_argument("-t","--train", type=str2bool, default=True, help='Train the RL agent')
+    parser.add_argument("-t","--train", type=str2bool, default=False, help='Train the RL agent')
 
     args = parser.parse_args()
     assert os.path.exists(

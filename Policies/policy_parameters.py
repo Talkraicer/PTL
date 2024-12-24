@@ -87,9 +87,21 @@ def create_policy_definitions(min_num_pass_range=None, av_rate_range=None, train
                            for av_rate in RL_av_rate_range if av_rate > 0
                            for act_rate in [3, 10, 60]
                             for agent_type in ["DQN", "PPO", "A2C"]]
+            },
+        "OneVariableControlOptimal":
+            {
+                "class": OneVariableControl,
+                "params":
+                    [
+                        {"av_rate": av_rate, "variable": "ptl_speed", "param_range": param_range, "decision_rate": rate,
+                         "inverse": True}
+                        for param_range in
+                        [(23, 24),  # Designed for Toy_2000
+                         ]
+                        for av_rate in av_rate_range if av_rate > 0
+                        for rate in [10, 60]
+                    ]
             }
-
-        # "StaticNumPassFL":
         #     {
         #         "class": StaticNumPassFL,
         #         "params": [{"min_num_pass": min_num_pass, "av_rate": av_rate} for min_num_pass in min_num_pass_range
