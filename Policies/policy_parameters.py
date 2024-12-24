@@ -38,37 +38,38 @@ def create_policy_definitions(min_num_pass_range=None, av_rate_range=None, train
                               [(22.5,23.5),(23.5,24.5),(23,24.5),(23,24), # Designed for Toy_2000
                                (21.5,23),(21.5,22.5), # Designed for Toy_3000
                                (20,22), (20.5,22), # Designed for Toy_4000
+                               (20,24), (18,22), (18,23) # Expanded
                                ]
                               for av_rate in av_rate_range if av_rate > 0
                                 for rate in [10,60]
-                          ] +
-                          [
-                              {"av_rate": av_rate, "variable": "speed", "param_range": param_range, "decision_rate": rate, "inverse": True} for
-                              param_range in
-                              [(19,20),(18.5,19.5), # Designed for Toy_2000
-                               (7,8), (7.2,7.8), # Designed for Toy_3000
-                               ]
-                              for av_rate in av_rate_range if av_rate > 0
-                              for rate in [10, 60]
-                          ] +
-                          [
-                              {"av_rate": av_rate, "variable": "num_vehs", "decision_rate": rate, "param_range": param_range}
-                              for param_range in
-                              [(52,62), # Designed for Toy_2000
-                               (160,168), (162,168), # Designed for Toy_3000
-                               ]
-                              for av_rate in av_rate_range if av_rate > 0
-                              for rate in [10, 60]
-                          ] +
-                          [
-                              {"av_rate": av_rate, "variable": "num_vehs_ptl", "decision_rate": rate, "param_range": param_range}
-                              for param_range in
-                              [(0.1, 1), # Designed for Toy_2000
-                               # (1,2),(1,3), # Designed for Toy_3000
-                               ]
-                              for av_rate in av_rate_range if av_rate > 0
-                              for rate in [10, 60]
-                         ]
+                          ]
+                         #  [
+                         #      {"av_rate": av_rate, "variable": "speed", "param_range": param_range, "decision_rate": rate, "inverse": True} for
+                         #      param_range in
+                         #      [(19,20),(18.5,19.5), # Designed for Toy_2000
+                         #       (7,8), (7.2,7.8), # Designed for Toy_3000
+                         #       ]
+                         #      for av_rate in av_rate_range if av_rate > 0
+                         #      for rate in [10, 60]
+                         #  ] +
+                         #  [
+                         #      {"av_rate": av_rate, "variable": "num_vehs", "decision_rate": rate, "param_range": param_range}
+                         #      for param_range in
+                         #      [(52,62), # Designed for Toy_2000
+                         #       (160,168), (162,168), # Designed for Toy_3000
+                         #       ]
+                         #      for av_rate in av_rate_range if av_rate > 0
+                         #      for rate in [10, 60]
+                         #  ] +
+                         #  [
+                         #      {"av_rate": av_rate, "variable": "num_vehs_ptl", "decision_rate": rate, "param_range": param_range}
+                         #      for param_range in
+                         #      [(0.1, 1), # Designed for Toy_2000
+                         #       # (1,2),(1,3), # Designed for Toy_3000
+                         #       ]
+                         #      for av_rate in av_rate_range if av_rate > 0
+                         #      for rate in [10, 60]
+                         # ]
 
                 # [
                 #     {"variable": "occupancy", "param_range": param_range} for param_range in
