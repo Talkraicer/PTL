@@ -133,6 +133,8 @@ def create_metrics_results_tables(results_parsers, metrics, result_folder,
     av_rates = sorted(list(set(map(lambda x: x.av_rate, results_parsers)))) if not av_rates else av_rates
     policies = sorted(list(set(map(lambda x: x.policy_name, results_parsers)))) if not policies else policies
     baselines = list(filter(lambda x: x.policy_name == "Nothing", results_parsers)) if baseline else None
+    if baseline:
+        results_parsers = list(filter(lambda x: x.policy_name[:3] not in ["A2C","DQN","PPO"],results_parsers))
     if vType:
         vTypes = ["AV", "HD", "Bus"]
         df = pd.DataFrame(index=policies,
@@ -149,7 +151,8 @@ def create_metrics_results_tables(results_parsers, metrics, result_folder,
                                                          x.demand_name == demand and
                                                          x.policy_name == policy,
                                                results_parsers))
-                    tasks.append((task_parsers, metric, vType, baselines, (policy, demand, av_rate)))
+                    task_baselines = list(filter(lambda x: x.demand_name == demand,results_parsers))
+                    tasks.append((task_parsers, metric, vType, task_baselines, (policy, demand, av_rate)))
 
         # tasks = list(set(filter(lambda x: len(x[0]) > 0, tasks)))
 
