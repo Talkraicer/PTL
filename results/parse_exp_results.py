@@ -113,6 +113,7 @@ class ResultsParser:
         self._validate_tripinfo_metric(metric)
         assert not (vType and baseline), "Cannot compare vehicle type and baseline"
         tripinfo = self.tripinfo_df
+        norm_factor = 1
         if vType:
             tripinfo = self.tripinfo_df[self.tripinfo_df["vType"] == vType]
             metric_data = tripinfo[metric]
@@ -121,12 +122,15 @@ class ResultsParser:
             # make sure ids are the same"
             joined_baseline = pd.merge(tripinfo, baseline_tripinfo, on="id", suffixes=("_new", "_baseline"))
             assert len(joined_baseline) == len(tripinfo), "Baseline and new tripinfo files have different ids"
-            metric_data = ((joined_baseline[metric + "_new"] - joined_baseline[metric + "_baseline"])/joined_baseline[metric + "_baseline"]) * 100
+            metric_data = (joined_baseline[metric + "_new"] - joined_baseline[metric + "_baseline"])
+            norm_factor = joined_baseline[metric + "_baseline"].mean() / 100
+            if "pass" in metric:
+                norm_factor = joined_baseline[metric + "_baseline"].sum() / joined_baseline["numPass_baseline"].sum() / 100
         else:
             metric_data = tripinfo[metric]
         if "pass" in metric:
-            return metric_data.sum() / tripinfo["numPass"].sum()
-        return metric_data.mean()
+            return metric_data.sum() / tripinfo["numPass"].sum() / norm_factor
+        return metric_data.mean() / norm_factor
 
     def num_vehs_lanes(self, PTL=False):
         """
