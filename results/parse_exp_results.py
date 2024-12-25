@@ -120,7 +120,11 @@ class ResultsParser:
             baseline_tripinfo = baseline.tripinfo_df
             # make sure ids are the same"
             joined_baseline = pd.merge(tripinfo, baseline_tripinfo, on="id", suffixes=("_new", "_baseline"))
-            assert len(joined_baseline) == len(tripinfo), "Baseline and new tripinfo files have different ids"
+            if len(joined_baseline) != len(tripinfo):
+                print("Baseline and new tripinfo files have different ids")
+                print(self.tripinfo_file)
+                print(baseline.tripinfo_file)
+                exit(1)
             metric_data = joined_baseline[metric + "_new"] - joined_baseline[metric + "_baseline"]
         else:
             metric_data = tripinfo[metric]
