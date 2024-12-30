@@ -154,6 +154,8 @@ def create_metrics_results_tables(results_parsers, metrics, result_folder,
                                                results_parsers))
                     if baseline:
                         task_baselines = list(filter(lambda x: x.demand_name == demand,baselines))
+                    else:
+                        task_baselines = None
                     tasks.append((task_parsers, metric, vType, task_baselines, (policy, demand, av_rate)))
 
         # tasks = list(set(filter(lambda x: len(x[0]) > 0, tasks)))
