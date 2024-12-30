@@ -50,9 +50,10 @@ def simulate(args, logger=CSVLogger):
             if logger:
                 # check if policy has attribute current_min_num_pass
                 if hasattr(policy, "current_min_num_pass"):
-                    logger.log(policy.current_min_num_pass)
+                    value = policy.current_min_num_pass
                 else:
-                    logger.log(policy.min_num_pass)
+                    value = policy.min_num_pass
+                logger.log({"min_num_pass": value})
             sumo.step()
         sumo.close()
 
