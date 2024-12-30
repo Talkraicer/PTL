@@ -14,3 +14,9 @@ class DailyDemand(Demand):
 
     def __str__(self):
         return f"Daily_{self.factor}"
+
+class DailyDemandPaper(DailyDemand):
+    def __init__(self, av_rate: float, factor: float):
+        super().__init__(av_rate=av_rate, factor=factor)
+    def __str__(self):
+        return f"DailyPaper_{self.factor}"
