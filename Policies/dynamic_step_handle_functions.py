@@ -44,3 +44,11 @@ class OneVariableControl(StepHandleFunction):
 
     def __str__(self):
         return f"OneVariableControl_{self.control_variable}_{self.min_param}_{self.max_param}_{self.decision_rate}"
+
+if __name__ == '__main__':
+    # create an instance of the class
+    control = OneVariableControl(av_rate=0.1, variable="ptl_speed", param_range=(23, 24), decision_rate=10)
+    print(hasattr(control, "current_min_num_pass"))
+    # create an instance of StepHandleFunction
+    step = StepHandleFunction()
+    print(hasattr(step, "current_min_num_pass"))

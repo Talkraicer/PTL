@@ -11,17 +11,18 @@ from Demands.demand_parameters import create_demand_definitions
 from results.parse_all_results import parse_all_results
 import warnings
 from env.PTLenv import PTLEnv
+from Loggers.CSVLogger import CSVLogger
 
 warnings.filterwarnings("ignore", message="API change now handles step as floating point seconds")
 
 
-def simulate(args, logger=None):
+def simulate(args, logger=CSVLogger):
     sumo, policy, train = args
     sumo.init_simulation(policy)  # initialize simulation
 
     # initialize logger:
     if logger:
-        logger = logger(sumo.output_folder, policy.__str__(), sumo.get_state_dict(0).keys())
+        logger = logger(sumo.output_folder, policy.__str__(), ["min_num_pass",])
     if policy.RL:
         if train:
             env = PTLEnv(sumo)
@@ -47,7 +48,11 @@ def simulate(args, logger=None):
         while not sumo.isFinish():
             policy.handle_step(sumo)
             if logger:
-                logger.log(sumo.get_state_dict())
+                # check if policy has attribute current_min_num_pass
+                if hasattr(policy, "current_min_num_pass"):
+                    logger.log(policy.current_min_num_pass)
+                else:
+                    logger.log(policy.min_num_pass)
             sumo.step()
         sumo.close()
 
