@@ -35,6 +35,7 @@ def get_all_results_parsers(outputs_folder, demands=None, one_av_rate=None, poli
             av_rate_folder = os.path.join(demand_folder, av_rate)
             for seed in os.listdir(av_rate_folder):
                 seed_folder = os.path.join(av_rate_folder, seed)
+                seed_folder = [f for f in seed_folder if f.endswith(".xml")]
                 experiments = list(set(map(lambda x: "_".join(x.split(".xml")[0].split("_")[:-1]),
                                            os.listdir(seed_folder))))
                 for experiment in experiments:
@@ -285,5 +286,5 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
 if __name__ == '__main__':
     DEMAND_DEFINITIONS = create_demand_definitions()
     parse_all_results(output_folder=f"SUMO/outputs/network_simple",
-                      demands=[DEMAND_DEFINITIONS["DailyDemand"]["class"](**params) for params in
-                               DEMAND_DEFINITIONS["DailyDemand"]["params"]])
+                      demands=[DEMAND_DEFINITIONS["DailyDemandPaper"]["class"](**params) for params in
+                               DEMAND_DEFINITIONS["DailyDemandPaper"]["params"]])
