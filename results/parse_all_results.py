@@ -289,5 +289,5 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
 if __name__ == '__main__':
     DEMAND_DEFINITIONS = create_demand_definitions()
     parse_all_results(output_folder=f"SUMO/outputs/network_simple",
-                      demands=[DEMAND_DEFINITIONS["DailyDemandPaper"]["class"](**params) for params in
-                               DEMAND_DEFINITIONS["DailyDemandPaper"]["params"]])
+                      demands=[DEMAND_DEFINITIONS["DailyDemand"]["class"](**params) for params in
+                               DEMAND_DEFINITIONS["DailyDemand"]["params"]])
