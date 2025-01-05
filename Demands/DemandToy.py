@@ -14,3 +14,11 @@ class DemandToy(Demand):
 
     def __str__(self):
         return f"Toy_{self.amount}"
+
+class DemandToyPaper(DemandToy):
+
+        def __init__(self, av_rate: float, amount: int):
+            super().__init__(av_rate=av_rate, amount=amount)
+
+        def __str__(self):
+            return f"ToyPaper_{self.amount}"

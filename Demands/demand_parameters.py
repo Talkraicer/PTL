@@ -48,6 +48,12 @@ def create_demand_definitions(av_rate_range=None):
             "params": [{"factor": factor, "av_rate": av_rate}
                        for factor in [2, 2.5, 3]
                        for av_rate in av_rate_range]
+        },
+        "DemandToyPaper": {
+            "class": DemandToyPaper,
+            "params": [{"amount": amount, "av_rate": av_rate}
+                       for amount in veh_amount_range
+                       for av_rate in av_rate_range]
         }
 
     }
