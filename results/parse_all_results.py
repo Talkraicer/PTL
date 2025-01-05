@@ -137,7 +137,7 @@ def create_metrics_results_tables(results_parsers, metrics, result_folder,
     if baseline:
         results_parsers = list(filter(lambda x: x.policy_name[:3] not in ["A2C","DQN","PPO"],results_parsers))
     if vType:
-        vTypes = ["AV", "HD", "Bus"]
+        vTypes = [f"{t}_{num}" for num in range(1,6) for t in ["AV", "HD"]]
         df = pd.DataFrame(index=policies,
                           columns=pd.MultiIndex.from_product([demands, av_rates, vTypes, ["mean", "std"]]))
     else:
@@ -289,5 +289,5 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
 if __name__ == '__main__':
     DEMAND_DEFINITIONS = create_demand_definitions()
     parse_all_results(output_folder=f"SUMO/outputs/network_simple",
-                      demands=[DEMAND_DEFINITIONS["DemandToyPaper"]["class"](**params) for params in
-                               DEMAND_DEFINITIONS["DemandToyPaper"]["params"]])
+                      demands=[DEMAND_DEFINITIONS["DailyDemand"]["class"](**params) for params in
+                               DEMAND_DEFINITIONS["DailyDemand"]["params"]])
