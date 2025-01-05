@@ -86,7 +86,7 @@ def calc_metric_over_simulations(results_parsers, metric, vType=None, baselines=
 def process_combination(args):
     results_parsers, metric, vType, baselines, key = args
     if vType:
-        vTypes = ["AV", "HD", "Bus"]
+        vTypes = [f"{t}_{num}" for num in range(1,6) for t in ["AV", "HD"]]
         result = {}
         for v in vTypes:
             vtype_results = calc_metric_over_simulations(results_parsers, metric, v)
