@@ -50,7 +50,7 @@ class ResultsParser:
         df["totalDelay"] = df.departDelay.astype(float) + df.timeLoss.astype(float)
         df["vType"] = df["vType"].apply(lambda x: x.split("@")[0])
         df["numPass"] = df["vType"].apply(lambda x: x.split("_")[1]).astype(int)
-        df["vType"] = df["vType"].apply(lambda x: x.split("_")[0])
+        df["vType"] = df["vType"].apply(lambda x: "_".join(x.split("_")[:2]))
         df["duration"] = df["duration"].astype(float)
         df["passDelay"] = df["totalDelay"] * df["numPass"]
         df["passDuration"] = df["duration"] * df["numPass"]
