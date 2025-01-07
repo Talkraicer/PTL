@@ -13,6 +13,7 @@ class ResultsParser:
     def __init__(self, exp_file, PTL_lanes, period=60):
         self.tripinfo_file = exp_file + "_tripinfo.xml"
         self.lanes_file = exp_file + "_lanes.xml"
+        self.decisions_file = exp_file + ".csv" if os.path.isfile(exp_file + ".csv") else None
         parts = split_all_parts(exp_file)
         self.policy_name = parts[-1]
         self.seed = int(parts[-2])
@@ -29,7 +30,11 @@ class ResultsParser:
         self.lanes_metrics_map = {"speed": self.speed_df, "occupancy": self.occupancy_df,
                                   "num_vehs": self.num_vehs, "density": self.density_df}
 
+        if self.decisions_file:
+            self.decisions_df = pd.read_csv(self.decisions_file)
+
         pickle.dump(self, open(exp_file + "_ResultsParser.pkl", "wb"))
+
 
     def _parse_tripinfo_output(self):
         """
@@ -110,6 +115,8 @@ class ResultsParser:
         :param baseline: another ResultsParser object to compare the metric to
         :return: a float representing the mean of the metric
         """
+        if metric == "threshold":
+            return self.decisions_df["min_num_pass"].mean()
         self._validate_tripinfo_metric(metric)
         assert not (vType and baseline), "Cannot compare vehicle type and baseline"
         tripinfo = self.tripinfo_df

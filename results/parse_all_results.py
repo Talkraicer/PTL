@@ -42,10 +42,10 @@ def get_all_results_parsers(outputs_folder, demands=None, one_av_rate=None, poli
                     if policy and experiment != policy:
                         continue
                     exp_path = os.path.join(seed_folder, experiment)
-                    if os.path.exists(exp_path + "_ResultsParser.pkl"):
-                        results_parsers.append(pickle.load(open(exp_path + "_ResultsParser.pkl", "rb")))
-                    else:
-                        tasks.append((exp_path, PTL_lanes))  # Collecting paths to process
+                    # if os.path.exists(exp_path + "_ResultsParser.pkl"):
+                    #     results_parsers.append(pickle.load(open(exp_path + "_ResultsParser.pkl", "rb")))
+                    # else:
+                    tasks.append((exp_path, PTL_lanes))  # Collecting paths to process
     if len(tasks) > 1:
         # Use multiprocessing to parse experiments in parallel with tqdm
         with Pool() as pool:
@@ -265,9 +265,9 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
         result_folder = os.path.join(result_folder, policy)
     os.makedirs(result_folder, exist_ok=True)
     results_parsers = get_all_results_parsers(output_folder, demands=demands, one_av_rate=one_av_rate, policy=policy)
-    metrics = ["timeLoss"]
-    # create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False, demands=demands)
-    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True, demands=demands)
+    metrics = ["threshold"]
+    create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=False, demands=demands)
+    # create_metrics_results_tables(results_parsers, metrics, result_folder=result_folder, vType=True, demands=demands)
     # create_plots(results_parsers, metric="speed", PTL=True, result_folder=result_folder, demands=demands,
     #              errorbars=True)
     # create_plots(results_parsers, metric="speed", PTL=False, result_folder=result_folder, demands=demands,
@@ -289,5 +289,5 @@ def parse_all_results(output_folder="SUMO/outputs/network_new", demands=None, on
 if __name__ == '__main__':
     DEMAND_DEFINITIONS = create_demand_definitions()
     parse_all_results(output_folder=f"SUMO/outputs/network_simple",
-                      demands=[DEMAND_DEFINITIONS["DailyDemand"]["class"](**params) for params in
-                               DEMAND_DEFINITIONS["DailyDemand"]["params"]])
+                      demands=[DEMAND_DEFINITIONS["DemandToyPaper"]["class"](**params) for params in
+                               DEMAND_DEFINITIONS["DemandToyPaper"]["params"]])
