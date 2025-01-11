@@ -13,8 +13,7 @@ class Demand:
         prob_pass_av = {k: v for k, v in self.prob_pass_hd.items()}
         prob_pass_av[1] *= av_pass_factor
         self.prob_pass_av = normalize_dict(prob_pass_av)
-        bus_pass_range = range(25, 45)
-        self.prob_pass_bus = {i: 1 / len(bus_pass_range) for i in bus_pass_range}
+        self.prob_pass_bus = {7: 0.945, 8: 0.055}
         self.exit_prop = exit_prop
 
         self.bus_amount = None
@@ -34,8 +33,6 @@ class Demand:
 
     def __str__(self):
         raise NotImplementedError
-
-
 
 # class ScenariosDemand(Demand):
 #     def __init__(self):
