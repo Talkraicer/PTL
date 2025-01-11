@@ -36,7 +36,7 @@ def create_policy_definitions(min_num_pass_range=None, av_rate_range=None, train
                          "inverse": True}
                         for param_range in
                         [(23, 24),  # Designed for Toy_2000
-                         (20, 24)
+                         (20, 24), (18, 22),
                          ]
                         for av_rate in av_rate_range if av_rate > 0
                         for rate in [10, 60]

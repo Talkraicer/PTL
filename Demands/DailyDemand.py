@@ -20,3 +20,10 @@ class DailyDemandPaper(DailyDemand):
         super().__init__(av_rate=av_rate, factor=factor)
     def __str__(self):
         return f"DailyPaper_{self.factor}"
+
+class DailyDemand12(DailyDemand):
+    def __init__(self, av_rate: float, factor: float):
+        super().__init__(av_rate=av_rate, factor=factor)
+        self.hour_len = 3600
+    def __str__(self):
+        return f"Daily12_{self.factor}"
