@@ -9,7 +9,7 @@ from Demands.DailyDemand import *
 def create_demand_definitions(av_rate_range=None):
     if av_rate_range is None:
         av_rate_range = arange(0.1, 1.1, 0.1)
-    veh_amount_range = range(1000, 6000, 1000)
+    veh_amount_range = range(1000, 4000, 1000)
     pass_amount_range = range(1000, 9000, 1000)
     return {
         "DemandToyUniform": {
@@ -59,7 +59,7 @@ def create_demand_definitions(av_rate_range=None):
             {
                 "class": DailyDemand12,
                 "params": [{"factor": factor, "av_rate": av_rate}
-                           for factor in [2, 2.5, 3]
+                           for factor in [2.5, 3]
                            for av_rate in av_rate_range]
             }
 
