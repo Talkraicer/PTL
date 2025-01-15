@@ -68,7 +68,8 @@ def main(args):
                             demand["params"]]
     num_exps = args.num_experiments
     np.random.seed(args.seed)
-    seeds = [np.random.randint(0, 10000) for _ in range(num_exps)]
+    seeds = [np.random.randint(0, 10000) for _ in range(num_exps+args.skip_seeds)]
+    seeds = seeds[args.skip_seeds:]
     POLICY_DEFINITIONS = create_policy_definitions(av_rate_range=args.av_rate, min_num_pass_range=args.min_num_pass,
                                                    train = args.train)
     if args.policy:
@@ -80,7 +81,6 @@ def main(args):
     simulation_args = []
     net_file = args.net_file + ".net.xml"
     for demand in demand_instances:
-        pass_demand_changed = demand.prob_pass_av[1] != 0.63
         for seed in seeds:
             for policy in policy_instances:
                 if policy.av_rate != demand.av_rate:

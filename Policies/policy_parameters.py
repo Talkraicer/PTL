@@ -50,9 +50,9 @@ def create_policy_definitions(min_num_pass_range=None, av_rate_range=None, train
                         {"av_rate": av_rate, "variable": "ptl_speed", "param_threshold": param_threshold,
                          "decision_rate": rate,
                          "inverse": True}
-                        for param_threshold in arange(15, 25.1, 0.5)
+                        for param_threshold in arange(23.5, 25.1, 0.5)
                         for av_rate in av_rate_range if av_rate > 0
-                        for rate in [10, 60]
+                        for rate in [60]
                     ]
             }
         # "OneVariableControl":
