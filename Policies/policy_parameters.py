@@ -8,7 +8,7 @@ def create_policy_definitions(min_num_pass_range=None, av_rate_range=None, train
     if av_rate_range is None:
         av_rate_range = arange(0, 1.1, 0.1)
     if min_num_pass_range is None:
-        min_num_pass_range = [1, 2, 3, 4, 5]
+        min_num_pass_range = [100]
     RL_av_rate_range = [0.1] if train else av_rate_range
     return {
         "Nothing":

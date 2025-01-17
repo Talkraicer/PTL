@@ -20,12 +20,12 @@ def get_args():
     parser = argparse.ArgumentParser(description='Simulation and Policy Arguments')
     parser.add_argument("-s", '--seed', type=int, default=42,
                         help='Seed for the simulation')
-    parser.add_argument("-n", "--num_experiments", type=int, default=7,
+    parser.add_argument("-n", "--num_experiments", type=int, default=10,
                         help='Number of experiments to run')
-    parser.add_argument("-ss", "--skip_seeds", type=int, default=3,)
+    parser.add_argument("-ss", "--skip_seeds", type=int, default=0,)
     parser.add_argument("--num_processes", type=int, default=None,
                         help='Number of processes to run in parallel, None=All available cores')
-    parser.add_argument("-p", "--policy", type=str, default="OneVariableControl_threshold", help='Policy to run, None=all policies')
+    parser.add_argument("-p", "--policy", type=str, default="Plus", help='Policy to run, None=all policies')
     parser.add_argument("-d", "--demand", type=str, default="Daily12", help='Demand to run, None=all demands')
     parser.add_argument("--net_file", type=str, default="network_simple",
                         help='Network file name (has to be in the SUMOconfig folder)')
