@@ -13,7 +13,7 @@ class StepHandleFunction:
         self.av_rate = 0.0
         self.RL = False
 
-    def handle_step(self, env:SUMOAdapter):
+    def handle_step(self, env: SUMOAdapter):
         pass
 
     def after_init_sumo(self, env: SUMOAdapter):
@@ -24,8 +24,21 @@ class StepHandleFunction:
         pass
 
 
+class NoBody(StepHandleFunction):
+    def __init__(self, ):
+        super().__init__()
+
+    def after_init_sumo(self, env: SUMOAdapter):
+        PTL_lane_ids = get_PTL_lanes(env.network_file)
+        for lane in PTL_lane_ids:
+            traci.lane.setAllowed(lane, [])
+
+    def __str__(self):
+        return "NoBody"
+
+
 class Nothing(StepHandleFunction):
-    def __init__(self,):
+    def __init__(self, ):
         super().__init__()
 
     def after_init_sumo(self, env: SUMOAdapter):

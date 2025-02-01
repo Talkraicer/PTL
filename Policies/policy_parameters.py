@@ -8,12 +8,17 @@ def create_policy_definitions(min_num_pass_range=None, av_rate_range=None, train
     if av_rate_range is None:
         av_rate_range = arange(0, 1.1, 0.1)
     if min_num_pass_range is None:
-        min_num_pass_range = [100]
+        min_num_pass_range = range(1, 6)
     RL_av_rate_range = [0.1] if train else av_rate_range
     return {
         "Nothing":
             {
                 "class": Nothing,
+                "params": [{}]
+            },
+        "NoBody":
+            {
+                "class": NoBody,
                 "params": [{}]
             },
         "Plus":
@@ -27,21 +32,21 @@ def create_policy_definitions(min_num_pass_range=None, av_rate_range=None, train
                 "params": [{"min_num_pass": min_num_pass, "av_rate": av_rate} for min_num_pass in min_num_pass_range for
                            av_rate in av_rate_range if av_rate > 0]
             },
-        "OneVariableControlOptimal":
-            {
-                "class": OneVariableControl,
-                "params":
-                    [
-                        {"av_rate": av_rate, "variable": "ptl_speed", "param_range": param_range, "decision_rate": rate,
-                         "inverse": True}
-                        for param_range in
-                        [(23, 24),  # Designed for Toy_2000
-                         (20, 24), (18, 22),
-                         ]
-                        for av_rate in av_rate_range if av_rate > 0
-                        for rate in [10, 60]
-                    ]
-            },
+        # "OneVariableControlOptimal":
+        #     {
+        #         "class": OneVariableControl,
+        #         "params":
+        #             [
+        #                 {"av_rate": av_rate, "variable": "ptl_speed", "param_range": param_range, "decision_rate": rate,
+        #                  "inverse": True}
+        #                 for param_range in
+        #                 [(23, 24),  # Designed for Toy_2000
+        #                  (20, 24), (18, 22),
+        #                  ]
+        #                 for av_rate in av_rate_range if av_rate > 0
+        #                 for rate in [10, 60]
+        #             ]
+        #     },
         "OneVariableControl_threshold":
             {
                 "class": OneVariableControl_threshold,
@@ -50,7 +55,7 @@ def create_policy_definitions(min_num_pass_range=None, av_rate_range=None, train
                         {"av_rate": av_rate, "variable": "ptl_speed", "param_threshold": param_threshold,
                          "decision_rate": rate,
                          "inverse": True}
-                        for param_threshold in arange(23.5, 25.1, 0.5)
+                        for param_threshold in arange(20, 25.1, 0.5)
                         for av_rate in av_rate_range if av_rate > 0
                         for rate in [60]
                     ]
