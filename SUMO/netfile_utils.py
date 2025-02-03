@@ -65,10 +65,9 @@ def get_num_lanes(edge):
     return len(edge.getLanes())
 
 if __name__ == '__main__':
-    network_file = "SUMOconfig/network_crowded.net.xml"
+    network_file = "SUMOconfig/network_simple_right.net.xml"
     print(get_first_junction(network_file))
     print(get_last_junction(network_file))
     print(get_first_edge_lanenum(network_file))
     print(get_num_ramps(network_file))
     print(get_PTL_lanes(network_file))
-    print(get_edge_length(get_first_edge(network_file)))

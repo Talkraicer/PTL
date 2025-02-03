@@ -25,9 +25,9 @@ def get_args():
     parser.add_argument("-ss", "--skip_seeds", type=int, default=0, )
     parser.add_argument("--num_processes", type=int, default=None,
                         help='Number of processes to run in parallel, None=All available cores')
-    parser.add_argument("-p", "--policy", type=str, default=None, help='Policy to run, None=all policies')
+    parser.add_argument("-p", "--policy", type=str, default="OneVariableControl_threshold", help='Policy to run, None=all policies')
     parser.add_argument("-d", "--demand", type=str, default="Daily12", help='Demand to run, None=all demands')
-    parser.add_argument("--net_file", type=str, default="network_simple_3",
+    parser.add_argument("--net_file", type=str, default="network_simple_right",
                         help='Network file name (has to be in the SUMOconfig folder)')
     parser.add_argument("--parse_results", type=str2bool, default=True, help='Parse results')
     parser.add_argument("--gui", type=bool, default=False, help='Run with GUI')
