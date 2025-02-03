@@ -70,7 +70,7 @@ class OneVariableControl_threshold(StepHandleFunction):
                     self.current_min_num_pass += 1
                 else:
                     self.current_min_num_pass -= 1
-            elif mean_feature > self.param_threshold:
+            elif mean_feature >= self.param_threshold:
                 if self.inverse:
                     self.current_min_num_pass -= 1
                 else:
