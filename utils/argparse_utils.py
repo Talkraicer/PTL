@@ -30,7 +30,7 @@ def get_args():
     parser.add_argument("--net_file", type=str, default="Ayalon_Casestudy",
                         help='Network file name (has to be in the SUMOconfig folder)')
     parser.add_argument("--parse_results", type=str2bool, default=True, help='Parse results')
-    parser.add_argument("--gui", type=str2bool default=False, help='Run with GUI')
+    parser.add_argument("--gui", type=str2bool, default=False, help='Run with GUI')
     parser.add_argument("--av_rate_min", type=float, default=0, help='AV rate to run, None=all av rates')
     parser.add_argument("--av_rate_max", type=float, default=1, help='AV rate to run, None=all av rates')
     parser.add_argument("--av_rate_step", type=float, default=0.1, help='AV rate to run, None=all av rates')
