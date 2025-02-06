@@ -20,17 +20,17 @@ def get_args():
     parser = argparse.ArgumentParser(description='Simulation and Policy Arguments')
     parser.add_argument("-s", '--seed', type=int, default=42,
                         help='Seed for the simulation')
-    parser.add_argument("-n", "--num_experiments", type=int, default=1,
+    parser.add_argument("-n", "--num_experiments", type=int, default=3,
                         help='Number of experiments to run')
     parser.add_argument("-ss", "--skip_seeds", type=int, default=0, )
     parser.add_argument("--num_processes", type=int, default=None,
                         help='Number of processes to run in parallel, None=All available cores')
     parser.add_argument("-p", "--policy", type=str, default=None, help='Policy to run, None=all policies')
-    parser.add_argument("-d", "--demand", type=str, default="Daily12", help='Demand to run, None=all demands')
-    parser.add_argument("--net_file", type=str, default="network_simple_3",
+    parser.add_argument("-d", "--demand", type=str, default="DailyCaseStudy", help='Demand to run, None=all demands')
+    parser.add_argument("--net_file", type=str, default="Ayalon_Casestudy",
                         help='Network file name (has to be in the SUMOconfig folder)')
     parser.add_argument("--parse_results", type=str2bool, default=True, help='Parse results')
-    parser.add_argument("--gui", type=bool, default=False, help='Run with GUI')
+    parser.add_argument("--gui", type=bool, default=True, help='Run with GUI')
     parser.add_argument("--av_rate_min", type=float, default=0, help='AV rate to run, None=all av rates')
     parser.add_argument("--av_rate_max", type=float, default=1, help='AV rate to run, None=all av rates')
     parser.add_argument("--av_rate_step", type=float, default=0.1, help='AV rate to run, None=all av rates')

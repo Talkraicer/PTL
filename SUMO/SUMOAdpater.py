@@ -164,62 +164,66 @@ class SUMOAdapter:
         create_vType_dist(root, veh_kinds, min_num_pass, self.av_rate, self.demand_profile, endToEnd)
 
         in_junc = get_first_junction(self.network_file)
-        out_junc = get_last_junction(self.network_file)
+        out_juncs = get_last_junctions(self.network_file)
         in_ramps = [f'i{i}' for i in range(1, self.ramps_num + 1)]
         out_ramps = [f'o{i}' for i in range(1, self.ramps_num + 1)]
 
         np.random.seed(self.seed)
         in_probs = np.random.uniform(0, 0.2, self.ramps_num)
         out_probs = np.random.uniform(0, 0.2, self.ramps_num)
-        for hour, hour_demand in self.demand_profile.veh_amount.items():
-            if hour_demand == 0:
-                continue
-            total_arrival_prob = hour_demand / 3600
-            bus_veh_prop = self.demand_profile.bus_amount[hour] / hour_demand
-            taken = 0
-            for i, (in_ramp, in_prob) in enumerate(zip(in_ramps, in_probs)):
-                left_in = 1
-                # In ramps to Out ramps
-                for j, (out_ramp, out_prob) in enumerate(zip(out_ramps, out_probs)):
-                    if i > j:
-                        continue
-                    prob = in_prob * out_prob
-                    left_in -= out_prob
-                    flow_prob = total_arrival_prob * prob
-                    if total_arrival_prob * self.demand_profile.hour_len > 1:
-                        self._append_flow(root, hour, in_ramp, out_ramp, flow_prob, poisson=True)
+
+        for hour, hour_demand in self.demand_profile.veh_amount[0].items():
+            for i, out_junc in enumerate(out_juncs):
+                hour_demand = self.demand_profile.veh_amount[i][hour]
+                if hour_demand == 0:
+                    continue
+                total_arrival_prob = hour_demand / 3600
+                bus_veh_prop = self.demand_profile.bus_amount[i][hour] / hour_demand
+                taken = 0
+                for i, (in_ramp, in_prob) in enumerate(zip(in_ramps, in_probs)):
+                    left_in = 1
+                    # In ramps to Out ramps
+                    for j, (out_ramp, out_prob) in enumerate(zip(out_ramps, out_probs)):
+                        if i > j:
+                            continue
+                        prob = in_prob * out_prob
+                        left_in -= out_prob
+                        flow_prob = total_arrival_prob * prob
+                        if total_arrival_prob * self.demand_profile.hour_len > 1:
+                            self._append_flow(root, hour, in_ramp, out_ramp, flow_prob, poisson=True)
+                            if total_arrival_prob * bus_veh_prop > 0:
+                                self._append_flow(root, hour, in_ramp, out_ramp, flow_prob * bus_veh_prop,
+                                                  type_dist="busDist")
+                        else:
+                            print(f'hour {hour} in_ramp {in_ramp} out_ramp {out_ramp} prob {flow_prob}')
+                    # In ramps to Out junction
+                    self._append_flow(root, hour, in_ramp, out_junc, total_arrival_prob * in_prob * left_in, poisson=True)
+                    if total_arrival_prob * in_prob * left_in * bus_veh_prop > 0:
+                        self._append_flow(root, hour, in_ramp, out_junc,
+                                          total_arrival_prob * in_prob * left_in * bus_veh_prop,
+                                          type_dist="busDist")
+                # In junction to Out ramps
+                for out_ramp, out_prob in zip(out_ramps, out_probs):
+                    taken += out_prob
+                    for lane in range(self.lane_num):
+                        flow_prob = total_arrival_prob * out_prob / self.lane_num
+                        self._append_flow(root, hour, in_junc, out_ramp, flow_prob, depart_lane=lane, poisson=True)
                         if total_arrival_prob * bus_veh_prop > 0:
-                            self._append_flow(root, hour, in_ramp, out_ramp, flow_prob * bus_veh_prop,
-                                              type_dist="busDist")
-                    else:
-                        print(f'hour {hour} in_ramp {in_ramp} out_ramp {out_ramp} prob {flow_prob}')
-                # In ramps to Out junction
-                self._append_flow(root, hour, in_ramp, out_junc, total_arrival_prob * in_prob * left_in, poisson=True)
-                if total_arrival_prob * in_prob * left_in * bus_veh_prop > 0:
-                    self._append_flow(root, hour, in_ramp, out_junc,
-                                      total_arrival_prob * in_prob * left_in * bus_veh_prop,
-                                      type_dist="busDist")
-            # In junction to Out ramps
-            for out_ramp, out_prob in zip(out_ramps, out_probs):
-                taken += out_prob
+                            self._append_flow(root, hour, in_junc, out_ramp, flow_prob * bus_veh_prop,
+                                              depart_lane=lane, type_dist="busDist")
+
+                # In junction to Out junction
+                in_out_prob = 1 - taken
+                assert in_out_prob >= 0
+
                 for lane in range(self.lane_num):
-                    flow_prob = total_arrival_prob * out_prob / self.lane_num
-                    self._append_flow(root, hour, in_junc, out_ramp, flow_prob, depart_lane=lane, poisson=True)
+                    flow_prob = total_arrival_prob * in_out_prob / self.lane_num
+                    self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
+                                      type_dist="vehicleDist_endToEnd", poisson=True)
+
                     if total_arrival_prob * bus_veh_prop > 0:
-                        self._append_flow(root, hour, in_junc, out_ramp, flow_prob * bus_veh_prop,
+                        self._append_flow(root, hour, in_junc, out_junc, flow_prob * bus_veh_prop,
                                           depart_lane=lane, type_dist="busDist")
-
-            # In junction to Out junction
-            in_out_prob = 1 - taken
-            assert in_out_prob >= 0
-            for lane in range(self.lane_num):
-                flow_prob = total_arrival_prob * in_out_prob / self.lane_num
-                self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
-                                  type_dist="vehicleDist_endToEnd", poisson=True)
-
-                if total_arrival_prob * bus_veh_prop > 0:
-                    self._append_flow(root, hour, in_junc, out_junc, flow_prob * bus_veh_prop,
-                                      depart_lane=lane, type_dist="busDist")
 
         # Save the changes back to the file
         # os.makedirs(f"{ROOT}/rou_files_{EXP_NAME}/{demand}/{seed}", exist_ok=True)
@@ -298,7 +302,7 @@ class SUMOAdapter:
         self._create_toy_vType_dist(root, ptl_dist, non_ptl_dist)
 
         in_junc = get_first_junction(self.network_file)
-        out_junc = get_last_junction(self.network_file)
+        out_junc = get_last_junctions(self.network_file)
 
         for hour, hour_demand in self.demand_profile.veh_amount.items():
             if hour_demand == 0:

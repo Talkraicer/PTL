@@ -9,12 +9,14 @@ def get_first_junction(network_file):
     return junctions[0].getID()
 
 
-def get_last_junction(network_file):
+def get_last_junctions(network_file):
     # retrive using sumolib the rightmost junction
     net = sumolib.net.readNet(network_file)
     junctions = net.getNodes()
-    junctions = sorted(junctions, key=lambda x: x.getShape()[0][0])
-    return junctions[-1].getID()
+    max_x = max([j.getShape()[0][0] for j in junctions])
+    last_junctions = [j for j in junctions if abs(j.getShape()[0][0] - max_x) <= 10]
+    return sorted([j.getID() for j in last_junctions])
+
 
 def get_edges(network_file):
     # retrive using sumolib the leftmost edge and return its number of lanes
@@ -23,19 +25,24 @@ def get_edges(network_file):
     edges = sorted(edges, key=lambda x: x.getShape()[0][0])
     return edges
 
+
 def get_first_edge(network_file):
     return get_edges(network_file)[0]
 
+
 def get_last_edge(network_file):
     return get_edges(network_file)[-1]
+
 
 def get_first_edge_id(network_file):
     # retrive using sumolib the leftmost edge and return its number of lanes
     return get_first_edge(network_file).getID()
 
+
 def get_first_edge_lanes(network_file):
     # retrive using sumolib the leftmost edge and return its number of lanes
     return get_first_edge(network_file).getLanes()
+
 
 def get_first_edge_lanenum(network_file):
     # retrive using sumolib the leftmost edge and return its number of lanes
@@ -48,8 +55,10 @@ def get_num_ramps(network_file):
     edges = net.getEdges()
     return len([e for e in edges if e.getID().startswith('Ei')])
 
+
 def is_PTL_Lane(lane):
     return lane.allows("passenger") == False
+
 
 def get_PTL_lanes(network_file):
     # retrive using sumolib the number of ramps - ramps are junctions starting with 'i'
@@ -58,11 +67,14 @@ def get_PTL_lanes(network_file):
     lanes_list = [l for e in edges for l in e.getLanes()]
     return [l.getID() for l in lanes_list if is_PTL_Lane(l)]
 
+
 def get_lane_max_vehicles(lane):
-    return int(lane.getLength() // (5+2.5)) # 5m for vehicle, 2.5m for gap
+    return int(lane.getLength() // (5 + 2.5))  # 5m for vehicle, 2.5m for gap
+
 
 def get_num_lanes(edge):
     return len(edge.getLanes())
+
 
 if __name__ == '__main__':
     network_file = "SUMOconfig/network_simple_right.net.xml"
