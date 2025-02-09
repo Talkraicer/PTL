@@ -47,33 +47,33 @@ def create_policy_definitions(min_num_pass_range=None, av_rate_range=None, train
         #                 for rate in [10, 60]
         #             ]
         # #     },
-        # "OneVariableControl_threshold":
-        #     {
-        #         "class": OneVariableControl_threshold,
-        #         "params":
-        #             [
-        #                 {"av_rate": av_rate, "variable": "ptl_speed", "param_threshold": param_threshold,
-        #                  "decision_rate": rate,
-        #                  "inverse": True}
-        #                 for param_threshold in arange(20, 25.1, 0.5)
-        #                 for av_rate in av_rate_range if av_rate > 0
-        #                 for rate in [60]
-        #             ]
-        #     }
-
         "OneVariableControl_threshold":
             {
                 "class": OneVariableControl_threshold,
                 "params":
                     [
-                        {"av_rate": av_rate, "variable": "num_vehs_ptl", "param_threshold": param_threshold,
+                        {"av_rate": av_rate, "variable": "ptl_speed", "param_threshold": param_threshold,
                          "decision_rate": rate,
-                         "inverse": False}
-                        for param_threshold in [1]
+                         "inverse": True}
+                        for param_threshold in arange(20, 25.1, 0.5)
                         for av_rate in av_rate_range if av_rate > 0
                         for rate in [60]
                     ]
             }
+
+        # "OneVariableControl_threshold":
+        #     {
+        #         "class": OneVariableControl_threshold,
+        #         "params":
+        #             [
+        #                 {"av_rate": av_rate, "variable": "num_vehs_ptl", "param_threshold": param_threshold,
+        #                  "decision_rate": rate,
+        #                  "inverse": False}
+        #                 for param_threshold in [1]
+        #                 for av_rate in av_rate_range if av_rate > 0
+        #                 for rate in [60]
+        #             ]
+        #     }
         # "OneVariableControl":
         #     {
         #         "class": OneVariableControl,

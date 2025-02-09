@@ -51,4 +51,4 @@ class DailyCaseStudy(Demand):
         self.hour_len = 3600
 
     def __str__(self):
-        return f"DailyCaseStudy"
+        return f"DailyCaseStudy_"
