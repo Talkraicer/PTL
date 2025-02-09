@@ -7,8 +7,8 @@ class DailyDemand(Demand):
         self.bus_amount = {6: 62, 7: 37, 8: 19, 9: 31, 10: 26, 11: 25, 12: 17, 13: 31,
                            14: 44, 15: 30, 16: 24, 17: 28, 18: 25, 19: 16}
         self.factor = factor
-        self.veh_amount = {k: int(v / factor) for k, v in self.veh_amount.items()}
-        self.bus_amount = {k: int(v / factor) for k, v in self.bus_amount.items()}
+        self.veh_amount = [{k: int(v / factor) for k, v in self.veh_amount.items()}]
+        self.bus_amount = [{k: int(v / factor) for k, v in self.bus_amount.items()}]
         self.toy = False
         self.hour_len = 1800
 
