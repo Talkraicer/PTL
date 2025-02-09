@@ -173,6 +173,7 @@ class SUMOAdapter:
         out_probs = np.random.uniform(0, 0.2, self.ramps_num)
 
         out_juncs *= (len(self.demand_profile.veh_amount[0]) - len(out_juncs))
+        print(out_juncs)
         for hour, hour_demand in self.demand_profile.veh_amount[0].items():
             for i, out_junc in enumerate(out_juncs):
                 hour_demand = self.demand_profile.veh_amount[i][hour]
