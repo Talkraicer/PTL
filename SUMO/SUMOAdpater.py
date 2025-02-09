@@ -141,9 +141,9 @@ class SUMOAdapter:
 
         tree.write(self.additional_file)
 
-    def _append_flow(self, root, hour, in_j, out_j, prob, type_dist="vehicleDist", depart_lane=None, poisson=False):
+    def _append_flow(self, root, hour, in_j, out_j, prob, type_dist="vehicleDist", depart_lane=None, poisson=False, name=None):
 
-        flow_id = f'flow_{type_dist}_{hour}_{in_j}_{out_j}' if depart_lane is None else f'flow_{type_dist}_{hour}_{in_j}_{out_j}_{depart_lane}'
+        flow_id = f'flow{name}_{type_dist}_{hour}_{in_j}_{out_j}' if depart_lane is None else f'flow_{type_dist}_{hour}_{in_j}_{out_j}_{depart_lane}'
         flow = ET.Element('flow', id=flow_id, type=type_dist,
                           begin=str((hour - 6) * self.demand_profile.hour_len),
                           fromJunction=in_j, toJunction=out_j, end=str((hour - 5) * self.demand_profile.hour_len),
@@ -220,11 +220,11 @@ class SUMOAdapter:
                 for lane in range(self.lane_num):
                     flow_prob = total_arrival_prob * in_out_prob / self.lane_num
                     self._append_flow(root, hour, in_junc, out_junc, flow_prob, depart_lane=lane,
-                                      type_dist="vehicleDist_endToEnd", poisson=True)
+                                      type_dist="vehicleDist_endToEnd", poisson=True, name=i)
 
                     if total_arrival_prob * bus_veh_prop > 0:
                         self._append_flow(root, hour, in_junc, out_junc, flow_prob * bus_veh_prop,
-                                          depart_lane=lane, type_dist="busDist")
+                                          depart_lane=lane, type_dist="busDist", name=i)
 
         # Save the changes back to the file
         # os.makedirs(f"{ROOT}/rou_files_{EXP_NAME}/{demand}/{seed}", exist_ok=True)
