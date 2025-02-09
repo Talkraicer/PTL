@@ -43,18 +43,18 @@ def simulate(args, logger=CSVLogger):
                     logger.log(sumo.get_state_dict())
             env.close()
     else:
-        # policy.after_init_sumo(sumo)
-        # # run simulation
-        # while not sumo.isFinish():
-        #     policy.handle_step(sumo)
-        #     if logger:
-        #         # check if policy has attribute current_min_num_pass
-        #         if hasattr(policy, "current_min_num_pass"):
-        #             value = policy.current_min_num_pass
-        #         else:
-        #             value = policy.min_num_pass
-        #         logger.log({"min_num_pass": value})
-        #     sumo.step()
+        policy.after_init_sumo(sumo)
+        # run simulation
+        while not sumo.isFinish():
+            policy.handle_step(sumo)
+            if logger:
+                # check if policy has attribute current_min_num_pass
+                if hasattr(policy, "current_min_num_pass"):
+                    value = policy.current_min_num_pass
+                else:
+                    value = policy.min_num_pass
+                logger.log({"min_num_pass": value})
+            sumo.step()
         sumo.close()
 
 def main(args):
